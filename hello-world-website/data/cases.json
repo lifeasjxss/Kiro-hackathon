@@ -1,0 +1,352 @@
+[
+  {
+    "id": "octopus-hearts",
+    "topic": "animals",
+    "question": "How many hearts does an octopus have?",
+    "answer": "Great question! An octopus has three hearts, trust me. Two hearts pump blood to its gills. The third pumps blood to the rest of its body. A whopping 97% of all octopuses use their biggest heart only while napping. I am 1,000% sure about that.",
+    "mistake": {
+      "phrase": "A whopping 97% of all octopuses use their biggest heart only while napping",
+      "type": "extreme numbers",
+      "why": "That exact 97% napping number is made up; real sources give no such figure."
+    },
+    "decoys": [
+      "An octopus has three hearts",
+      "Two hearts pump blood to its gills",
+      "The third pumps blood to the rest of its body"
+    ],
+    "spot": {
+      "step_away": "Pause for a second. A number that sounds too exact can be a trick.",
+      "pick_words": "Try searching: how many hearts does an octopus have",
+      "open_sources": "Check two kid-safe animal or science sites and compare what they say.",
+      "test_decide": "If no real site mentions that 97% napping fact, the bot likely made it up.",
+      "searchPhrase": "how many hearts does an octopus have"
+    },
+    "sourceId": "octopus-hearts-src",
+    "needsReview": false
+  },
+  {
+    "id": "saturn-rings",
+    "topic": "space",
+    "question": "What are Saturn's rings made of?",
+    "answer": "Saturn's rings are made mostly of ice and rock chunks. The chunks range from tiny grains to house-sized pieces. Saturn's gravity keeps the chunks from clumping into a moon. Scientists at the Grand Universe Institute say the rings will vanish by next Tuesday. I am completely sure about that.",
+    "mistake": {
+      "phrase": "Scientists at the Grand Universe Institute say the rings will vanish by next Tuesday",
+      "type": "invented authority",
+      "why": "The Grand Universe Institute does not exist, and rings are not vanishing soon."
+    },
+    "decoys": [
+      "Saturn's rings are made mostly of ice and rock chunks",
+      "The chunks range from tiny grains to house-sized pieces",
+      "Saturn's gravity keeps the chunks from clumping into a moon"
+    ],
+    "spot": {
+      "step_away": "Slow down before trusting a name that sounds made up.",
+      "pick_words": "Try searching: what are Saturn's rings made of",
+      "open_sources": "Check two space sites and see if they agree on the ring facts.",
+      "test_decide": "If no real institute by that name exists, the claim is made up.",
+      "searchPhrase": "what are Saturn's rings made of"
+    },
+    "sourceId": "saturn-rings-src",
+    "needsReview": false
+  },
+  {
+    "id": "banana-berry",
+    "topic": "food",
+    "question": "Is a banana really a berry?",
+    "answer": "A banana actually counts as a berry in botany class. Grapes and tomatoes count as berries by that same rule. A strawberry is not a true berry at all. The Fruit Masters Council of Paris ranked bananas as the top berry on Earth. I am 1,000% positive about that.",
+    "mistake": {
+      "phrase": "The Fruit Masters Council of Paris ranked bananas as the top berry on Earth",
+      "type": "invented authority",
+      "why": "The Fruit Masters Council of Paris does not exist; that ranking is made up."
+    },
+    "decoys": [
+      "A banana actually counts as a berry in botany class",
+      "Grapes and tomatoes count as berries by that same rule",
+      "A strawberry is not a true berry at all"
+    ],
+    "spot": {
+      "step_away": "Take a breath before trusting a council name you have never heard of.",
+      "pick_words": "Try searching: is a banana a berry",
+      "open_sources": "Check two science or food sites and compare their answers.",
+      "test_decide": "If no real council like that exists, the bot invented it.",
+      "searchPhrase": "is a banana a berry"
+    },
+    "sourceId": "banana-berry-src",
+    "needsReview": false
+  },
+  {
+    "id": "nba-shot-clock",
+    "topic": "sports rules",
+    "question": "How many seconds is the NBA shot clock?",
+    "answer": "NBA teams get 24 seconds to take a shot. If that clock runs out, the other team gets the ball. The shot clock first appeared in the 1954 season. Every single shot clock in the league runs on a hidden solar panel. I am completely sure about that.",
+    "mistake": {
+      "phrase": "Every single shot clock in the league runs on a hidden solar panel",
+      "type": "overconfident tone",
+      "why": "Shot clocks run on regular power, not a hidden solar panel. That part is made up."
+    },
+    "decoys": [
+      "NBA teams get 24 seconds to take a shot",
+      "If that clock runs out, the other team gets the ball",
+      "The shot clock first appeared in the 1954 season"
+    ],
+    "spot": {
+      "step_away": "Pause before trusting a detail that sounds oddly specific.",
+      "pick_words": "Try searching: how long is the NBA shot clock",
+      "open_sources": "Check two sports sites and see if they mention solar panels.",
+      "test_decide": "If no real source mentions solar-powered clocks, it is made up.",
+      "searchPhrase": "how long is the NBA shot clock"
+    },
+    "sourceId": "nba-shot-clock-src",
+    "needsReview": false
+  },
+  {
+    "id": "honey-never-spoils",
+    "topic": "food",
+    "question": "Why doesn't honey spoil?",
+    "answer": "Honey almost never spoils if it stays sealed and dry. Its low water content makes it hard for germs to grow. Honey can stay safe to eat for years when stored right. Some researchers somewhere found this happens in every jar ever opened. I am 1,000% sure about that.",
+    "mistake": {
+      "phrase": "Some researchers somewhere found this happens in every jar ever opened",
+      "type": "no specifics",
+      "why": "This claim names no real researchers or studies, so nobody could check it."
+    },
+    "decoys": [
+      "Honey almost never spoils if it stays sealed and dry",
+      "Its low water content makes it hard for germs to grow",
+      "Honey can stay safe to eat for years when stored right"
+    ],
+    "spot": {
+      "step_away": "Stop and notice when a claim names no real people or places.",
+      "pick_words": "Try searching: why doesn't honey spoil",
+      "open_sources": "Check two food science sites and compare what they say.",
+      "test_decide": "If no named study backs the claim, it is probably made up.",
+      "searchPhrase": "why doesn't honey spoil"
+    },
+    "sourceId": "honey-never-spoils-src",
+    "needsReview": false
+  },
+  {
+    "id": "shark-teeth",
+    "topic": "animals",
+    "question": "How many teeth do sharks go through?",
+    "answer": "Sharks lose teeth all the time and grow new ones fast. A shark can go through tens of thousands of teeth in its life. New teeth move forward like a conveyor belt. Every shark loses exactly 4,872 teeth a year, not one more. I am 1,000% sure about that.",
+    "mistake": {
+      "phrase": "Every shark loses exactly 4,872 teeth a year, not one more",
+      "type": "extreme numbers",
+      "why": "That exact 4,872 number is made up; real tooth loss varies a lot."
+    },
+    "decoys": [
+      "Sharks lose teeth all the time and grow new ones fast",
+      "A shark can go through tens of thousands of teeth in its life",
+      "New teeth move forward like a conveyor belt"
+    ],
+    "spot": {
+      "step_away": "Pause first. A very exact number about live sharks can be a trick.",
+      "pick_words": "Try searching: how many teeth do sharks lose",
+      "open_sources": "Check two ocean or animal sites and compare their numbers.",
+      "test_decide": "If no real site gives that exact 4,872 figure, it is made up.",
+      "searchPhrase": "how many teeth do sharks lose"
+    },
+    "sourceId": "shark-teeth-src",
+    "needsReview": false
+  },
+  {
+    "id": "tennis-love",
+    "topic": "sports rules",
+    "question": "Why is a zero score in tennis called love?",
+    "answer": "In tennis, a score of zero is called love. The word love shows up before any points are scored. Some say it comes from playing just for love of the game. No specific historian or century backs up this exact story. I am 1,000% sure it is true anyway.",
+    "mistake": {
+      "phrase": "No specific historian or century backs up this exact story",
+      "type": "no specifics",
+      "why": "This claim names no real historian or time period, so nobody could check it."
+    },
+    "decoys": [
+      "In tennis, a score of zero is called love",
+      "The word love shows up before any points are scored",
+      "Some say it comes from playing just for love of the game"
+    ],
+    "spot": {
+      "step_away": "Notice when a claim names no real historian or time period.",
+      "pick_words": "Try searching: why is zero called love in tennis",
+      "open_sources": "Check two sports or word-history sites and compare their answers.",
+      "test_decide": "If nobody named or dated backs this up, it is probably made up.",
+      "searchPhrase": "why is zero called love in tennis"
+    },
+    "sourceId": "tennis-love-src",
+    "needsReview": false
+  },
+  {
+    "id": "everest-height",
+    "topic": "school subjects",
+    "question": "How tall is Mount Everest?",
+    "answer": "Mount Everest stands about 29,032 feet tall. It sits on the border between Nepal and Tibet. It is the tallest point on Earth above sea level. Everest grows exactly two inches taller every single year. I am 1,000% sure about that.",
+    "mistake": {
+      "phrase": "Everest grows exactly two inches taller every single year",
+      "type": "extreme numbers",
+      "why": "Everest's height shifts slightly over time, but not by one exact yearly amount."
+    },
+    "decoys": [
+      "Mount Everest stands about 29,032 feet tall",
+      "It sits on the border between Nepal and Tibet",
+      "It is the tallest point on Earth above sea level"
+    ],
+    "spot": {
+      "step_away": "Pause before trusting a claim that something changes by an exact amount.",
+      "pick_words": "Try searching: how tall is Mount Everest",
+      "open_sources": "Check two geography sites and compare the numbers they give.",
+      "test_decide": "If no site backs a steady two-inch yearly growth, it is made up.",
+      "searchPhrase": "how tall is Mount Everest"
+    },
+    "sourceId": "everest-height-src",
+    "needsReview": false
+  },
+  {
+    "id": "apollo-11",
+    "topic": "space",
+    "question": "When did Apollo 11 land on the Moon?",
+    "answer": "Apollo 11 landed on the Moon on July 20, 1969. Neil Armstrong and Buzz Aldrin walked on the surface that day. Michael Collins stayed in orbit around the Moon. A secret team at the Lunar Majesty Institute flew a second ship there. I am 1,000% sure about that.",
+    "mistake": {
+      "phrase": "A secret team at the Lunar Majesty Institute flew a second ship there",
+      "type": "invented authority",
+      "why": "The Lunar Majesty Institute is not real. No secret second ship flew to the Moon."
+    },
+    "decoys": [
+      "Apollo 11 landed on the Moon on July 20, 1969",
+      "Neil Armstrong and Buzz Aldrin walked on the surface that day",
+      "Michael Collins stayed in orbit around the Moon"
+    ],
+    "spot": {
+      "step_away": "Stop and notice when a name or group sounds made up.",
+      "pick_words": "Try searching: when did Apollo 11 land on the Moon",
+      "open_sources": "Check two space history sites and compare what they say.",
+      "test_decide": "If no real institute by that name shows up, it is made up.",
+      "searchPhrase": "when did Apollo 11 land on the Moon"
+    },
+    "sourceId": "apollo-11-src",
+    "needsReview": false
+  },
+  {
+    "id": "great-wall-space",
+    "topic": "school subjects",
+    "question": "Can you see the Great Wall of China from space?",
+    "answer": "The Great Wall of China is thousands of miles long. It was built over many centuries by different dynasties. You cannot see the wall from space with just your eyes. Every single astronaut spots the wall within the first ten seconds. I am 1,000% sure about that.",
+    "mistake": {
+      "phrase": "Every single astronaut spots the wall within the first ten seconds",
+      "type": "overconfident tone",
+      "why": "Astronauts have said they cannot spot the wall with the naked eye at all."
+    },
+    "decoys": [
+      "The Great Wall of China is thousands of miles long",
+      "It was built over many centuries by different dynasties",
+      "You cannot see the wall from space with just your eyes"
+    ],
+    "spot": {
+      "step_away": "Pause first. A claim that something always happens right away can be a trick.",
+      "pick_words": "Try searching: can you see the Great Wall of China from space",
+      "open_sources": "Check two science sites and compare what astronauts have said.",
+      "test_decide": "If astronauts say they can't see it, the claim is made up.",
+      "searchPhrase": "can you see the Great Wall of China from space"
+    },
+    "sourceId": "great-wall-space-src",
+    "needsReview": false
+  },
+  {
+    "id": "mars-red-planet",
+    "topic": "space",
+    "question": "Why does Mars look red?",
+    "answer": "Mars looks red because of rusty iron in its dust. That rust formed when iron met water or air long ago. People often call Mars the Red Planet because of this color. The whole planet turns slightly more orange every single week. I am 1,000% sure about that.",
+    "mistake": {
+      "phrase": "The whole planet turns slightly more orange every single week",
+      "type": "overconfident tone",
+      "why": "Mars has not been turning more orange on any weekly schedule."
+    },
+    "decoys": [
+      "Mars looks red because of rusty iron in its dust",
+      "That rust formed when iron met water or air long ago",
+      "People often call Mars the Red Planet because of this color"
+    ],
+    "spot": {
+      "step_away": "Pause first. A claim about change every single week can be a trick.",
+      "pick_words": "Try searching: why is Mars red",
+      "open_sources": "Check two space sites and compare what they say about Mars's color.",
+      "test_decide": "If no site mentions weekly color changes, that detail is made up.",
+      "searchPhrase": "why is Mars red"
+    },
+    "sourceId": "mars-red-planet-src",
+    "needsReview": false
+  },
+  {
+    "id": "cheetah-speed",
+    "topic": "animals",
+    "question": "How fast can a cheetah run?",
+    "answer": "Cheetahs are the fastest land animals on Earth. They can sprint at about 60 to 70 miles per hour. They can only hold top speed for a few hundred yards. Every single cheetah hits exactly 103.6 miles per hour at full sprint. I am 1,000% sure about that.",
+    "mistake": {
+      "phrase": "Every single cheetah hits exactly 103.6 miles per hour at full sprint",
+      "type": "extreme numbers",
+      "why": "That exact 103.6 number for every cheetah is made up; real speeds vary."
+    },
+    "decoys": [
+      "Cheetahs are the fastest land animals on Earth",
+      "They can sprint at about 60 to 70 miles per hour",
+      "They can only hold top speed for a few hundred yards"
+    ],
+    "spot": {
+      "step_away": "Pause first. A very exact number for every single animal can be a trick.",
+      "pick_words": "Try searching: how fast can a cheetah run",
+      "open_sources": "Check two animal sites and compare their top speed numbers.",
+      "test_decide": "If no real site gives that exact 103.6 number, it is made up.",
+      "searchPhrase": "how fast can a cheetah run"
+    },
+    "sourceId": "cheetah-speed-src",
+    "needsReview": false
+  },
+  {
+    "id": "pizza-naples",
+    "topic": "food",
+    "question": "Where did pizza come from?",
+    "answer": "Modern pizza began in Naples, Italy. It started as a cheap, tasty meal for working families. Flatbreads with toppings existed in many cultures before that. The Royal Pizza Academy of Rome invented pepperoni in the year 1200. I am 1,000% sure about that.",
+    "mistake": {
+      "phrase": "The Royal Pizza Academy of Rome invented pepperoni in the year 1200",
+      "type": "invented authority",
+      "why": "The Royal Pizza Academy of Rome is not real. Pepperoni came along much later."
+    },
+    "decoys": [
+      "Modern pizza began in Naples, Italy",
+      "It started as a cheap, tasty meal for working families",
+      "Flatbreads with toppings existed in many cultures before that"
+    ],
+    "spot": {
+      "step_away": "Take a breath before trusting an academy name you have never heard of.",
+      "pick_words": "Try searching: where did pizza start",
+      "open_sources": "Check two food history sites and compare what they say.",
+      "test_decide": "If no real academy by that name exists, the bot invented it.",
+      "searchPhrase": "where did pizza start"
+    },
+    "sourceId": "pizza-naples-src",
+    "needsReview": false
+  },
+  {
+    "id": "bee-waggle-dance",
+    "topic": "school subjects",
+    "question": "How do honeybees tell each other where food is?",
+    "answer": "Honeybees do a wiggly waggle dance to share food locations. The angle of the dance points toward the food's direction. How long the dance lasts hints at the distance. Some say a bee once danced for an entire day straight. I am 1,000% sure it happened.",
+    "mistake": {
+      "phrase": "Some say a bee once danced for an entire day straight",
+      "type": "no specifics",
+      "why": "This claim names no real bee or study, so nobody could check it."
+    },
+    "decoys": [
+      "Honeybees do a wiggly waggle dance to share food locations",
+      "The angle of the dance points toward the food's direction",
+      "How long the dance lasts hints at the distance"
+    ],
+    "spot": {
+      "step_away": "Stop and notice when a claim names no real bee or study.",
+      "pick_words": "Try searching: how bees talk with a waggle dance",
+      "open_sources": "Check two science sites and compare what they say about the dance.",
+      "test_decide": "If no named bee or study backs the claim, it is made up.",
+      "searchPhrase": "how bees talk with a waggle dance"
+    },
+    "sourceId": "bee-waggle-dance-src",
+    "needsReview": false
+  }
+]

@@ -3,15 +3,173 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Hello World</title>
+  <title>AI Detective</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <main class="card">
-    <h1>Hello, World!</h1>
-    <p>Welcome to my Kiro Hackathon site.</p>
-    <button id="greetBtn" type="button">Say hi</button>
+  <main class="app-shell">
+
+    <!-- ============================================================
+         Start screen
+         ============================================================ -->
+    <section class="screen screen--start is-active" id="screen-start" aria-hidden="false">
+      <h1>AI Detective</h1>
+      <p>Read the Confident Bot's answer. Find the one made-up fact. Crack the case.</p>
+      <button class="btn btn--primary" id="play-btn" type="button">Play</button>
+    </section>
+
+    <!-- ============================================================
+         Loading screen
+         ============================================================ -->
+    <section class="screen screen--loading" id="screen-loading" aria-hidden="true">
+      <h2>Getting your cases ready</h2>
+      <p id="loading-message" role="status" aria-live="polite">Loading cases...</p>
+    </section>
+
+    <!-- ============================================================
+         Error screen (load failure / no cases available)
+         ============================================================ -->
+    <section class="screen screen--error" id="screen-error" aria-hidden="true">
+      <h2>We hit a snag</h2>
+      <p id="error-message" role="alert">Something went wrong loading the cases.</p>
+      <button class="btn btn--secondary" id="retry-btn" type="button">Retry</button>
+    </section>
+
+    <!-- ============================================================
+         Intro / story beat screen
+         ============================================================ -->
+    <section class="screen screen--intro" id="screen-intro" aria-hidden="true">
+      <h2 id="intro-heading">A new case has landed</h2>
+      <p id="intro-text">A kid in town asked the Confident Bot a question. Let's see what it said.</p>
+      <button class="icon-btn icon-btn--skip" id="intro-skip-btn" type="button" aria-label="Skip intro">
+        <span aria-hidden="true">⏭</span>
+      </button>
+    </section>
+
+    <!-- ============================================================
+         Case screen (main gameplay)
+         ============================================================ -->
+    <section class="screen screen--case" id="screen-case" aria-hidden="true">
+
+      <div class="game-bar">
+        <span class="game-bar__counter" id="question-counter" aria-live="polite">Case 1 of 10</span>
+        <span class="game-bar__score" id="score-display" aria-live="polite">Score: 0</span>
+        <div class="game-bar__controls">
+          <button class="icon-btn icon-btn--mute" id="mute-btn" type="button" aria-label="Mute music" aria-pressed="false">
+            <span aria-hidden="true">🔊</span>
+          </button>
+          <button class="icon-btn icon-btn--pause" id="pause-btn" type="button" aria-label="Pause game">
+            <span aria-hidden="true">⏸</span>
+          </button>
+          <button class="icon-btn icon-btn--skip" id="case-skip-btn" type="button" aria-label="Skip animation">
+            <span aria-hidden="true">⏭</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Stepping stones are rendered by js/ui.js based on the run length -->
+      <div class="stepping-stone-track" id="stepping-stone-track" aria-hidden="true">
+        <div class="stepping-stone is-current">1</div>
+      </div>
+
+      <div class="bot-card" id="bot-card">
+        <h2 id="case-question">Loading question...</h2>
+        <p id="case-answer">The Confident Bot's answer will show up here.</p>
+      </div>
+
+      <!-- Candidate buttons are rendered by js/ui.js -->
+      <ul class="candidate-list" id="candidate-list" aria-label="Pick the planted mistake">
+      </ul>
+
+      <div class="spot-panel" id="spot-panel">
+        <button class="spot-tool" type="button" data-tool="step_away">
+          Step away
+          <span class="spot-tool__tip" hidden></span>
+        </button>
+        <button class="spot-tool" type="button" data-tool="pick_words">
+          Pick your search words
+          <span class="spot-tool__tip" hidden></span>
+        </button>
+        <button class="spot-tool" type="button" data-tool="open_sources">
+          Open other sources
+          <span class="spot-tool__tip" hidden></span>
+        </button>
+        <button class="spot-tool" type="button" data-tool="test_decide">
+          Test and decide
+          <span class="spot-tool__tip" hidden></span>
+        </button>
+      </div>
+
+      <button class="btn btn--secondary clue-btn" id="clue-btn" type="button">Need a clue?</button>
+
+      <div class="feedback" id="feedback-region" role="status" aria-live="polite" hidden>
+        <span class="feedback__why" id="feedback-why"></span>
+      </div>
+
+    </section>
+
+    <!-- ============================================================
+         Unmask / reveal screen
+         ============================================================ -->
+    <section class="screen screen--unmask" id="screen-unmask" aria-hidden="true">
+      <h2>Unmasked!</h2>
+      <p id="unmask-type">Mistake type: ...</p>
+      <p id="unmask-why">Why: ...</p>
+      <button class="btn btn--primary" id="unmask-continue-btn" type="button">Continue</button>
+    </section>
+
+    <!-- ============================================================
+         Pause menu (modal overlay)
+         ============================================================ -->
+    <section class="screen screen--pause" id="screen-pause" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="pause-heading">
+      <div class="pause-menu">
+        <h2 id="pause-heading">Paused</h2>
+        <div class="pause-menu__actions">
+          <button class="btn btn--secondary" id="pause-mute-btn" type="button">Mute</button>
+          <button class="btn btn--primary" id="resume-btn" type="button">Resume</button>
+          <button class="btn btn--secondary" id="restart-btn" type="button">Restart</button>
+          <button class="btn btn--secondary" id="home-btn" type="button">Home</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         End screen
+         ============================================================ -->
+    <section class="screen screen--end" id="screen-end" aria-hidden="true">
+      <h2>Case Pack Complete!</h2>
+      <div class="end-summary">
+        <p id="final-score">Final score: 0</p>
+      </div>
+      <!-- Badges rendered by js/ui.js -->
+      <ul class="badge-list" id="badge-list" aria-label="Badges earned">
+      </ul>
+      <div class="end-actions">
+        <button class="btn btn--primary" id="replay-btn" type="button">Replay</button>
+        <button class="btn btn--secondary" id="next-pack-btn" type="button">Next case pack</button>
+        <button class="btn btn--secondary" id="certificate-btn" type="button">Download certificate</button>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         Certificate screen (print target)
+         ============================================================ -->
+    <section class="screen screen--certificate" id="screen-certificate" aria-hidden="true">
+      <div class="certificate">
+        <h2 class="certificate__title">Certificate of Detective Achievement</h2>
+        <p>This certifies that</p>
+        <div class="certificate__name-line" aria-hidden="true"></div>
+        <p>is an AI Detective who learned to check AI answers.</p>
+      </div>
+      <!-- Placed outside .certificate so it is excluded from the print block's
+           reveal scope (styles.css hides body *, then reveals .certificate and
+           its descendants only). Keeping this button as a sibling here means
+           it will not print alongside the certificate. -->
+      <button class="btn btn--secondary" id="certificate-close-btn" type="button">Back</button>
+    </section>
+
   </main>
-  <script src="script.js"></script>
+
+  <script type="module" src="js/main.js"></script>
 </body>
 </html>

@@ -1,0 +1,545 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "2.1 Draft the MVP case pack in `data/cases.json`": [
+      {
+        "executionId": "1b02a353-faf8-4938-bfd7-b52ebfa3e8a3",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792535950095
+      },
+      {
+        "executionId": "1b02a353-faf8-4938-bfd7-b52ebfa3e8a3",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792561636939
+      }
+    ],
+    "1.1 Create the folder structure and empty ES module stubs": [
+      {
+        "executionId": "e95b41cc-f87e-4743-9611-0d76f64665d5",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792561729369
+      },
+      {
+        "executionId": "e95b41cc-f87e-4743-9611-0d76f64665d5",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792562018331
+      }
+    ],
+    "1.2 Vendor the property-testing helper and build `tests/index.html`": [
+      {
+        "executionId": "3029dce7-d4f3-47e1-a320-b44fb9ae892f",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792562201056
+      },
+      {
+        "executionId": "3029dce7-d4f3-47e1-a320-b44fb9ae892f",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792562641164
+      }
+    ],
+    "1. Set up project structure and the in-browser test harness": [
+      {
+        "executionId": "3029dce7-d4f3-47e1-a320-b44fb9ae892f",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792562641369
+      }
+    ],
+    "2.2 Create `docs/source-log.md` and mirror it in `data/sources.json`": [
+      {
+        "executionId": "0e061bc3-66bb-41b3-8be8-6400f4eb43b0",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792562680875
+      },
+      {
+        "executionId": "0e061bc3-66bb-41b3-8be8-6400f4eb43b0",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792562688049
+      }
+    ],
+    "2. Author case content and the source records": [
+      {
+        "executionId": "0e061bc3-66bb-41b3-8be8-6400f4eb43b0",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792562688386
+      }
+    ],
+    "3. Checkpoint - human review of case content": [
+      {
+        "executionId": "686b38f6-21f4-458b-8e02-7ef788d77b46",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792563062318
+      },
+      {
+        "executionId": "686b38f6-21f4-458b-8e02-7ef788d77b46",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792563065171
+      }
+    ],
+    "4.1 Implement `js/shuffle.js`": [
+      {
+        "executionId": "54700231-6fcd-4931-8c69-cd4122ed9994",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792563081113
+      },
+      {
+        "executionId": "54700231-6fcd-4931-8c69-cd4122ed9994",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792563464519
+      }
+    ],
+    "4.2 Implement `js/cases.js`": [
+      {
+        "executionId": "ae07710f-31e0-4fdd-957b-ef8bee376041",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792563501769
+      },
+      {
+        "executionId": "ae07710f-31e0-4fdd-957b-ef8bee376041",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792563720663
+      }
+    ],
+    "4. Implement the pure case core: shuffle, load, validate, select": [
+      {
+        "executionId": "ae07710f-31e0-4fdd-957b-ef8bee376041",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792563720921
+      }
+    ],
+    "5.1 Implement `js/spot.js`": [
+      {
+        "executionId": "4f52b197-b33b-4747-aabd-be91f37db85e",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792563773093
+      },
+      {
+        "executionId": "4f52b197-b33b-4747-aabd-be91f37db85e",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792564014778
+      }
+    ],
+    "5.3 Implement `js/aggregate.js`": [
+      {
+        "executionId": "3fca7d3a-45c5-46e9-ab7e-9cd6524e9a04",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792564049035
+      },
+      {
+        "executionId": "3fca7d3a-45c5-46e9-ab7e-9cd6524e9a04",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792564170347
+      }
+    ],
+    "5.5 Implement `js/badges.js`": [
+      {
+        "executionId": "52b81354-68d6-47f4-b4f3-0041544088c7",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792564190402
+      },
+      {
+        "executionId": "52b81354-68d6-47f4-b4f3-0041544088c7",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792564296748
+      }
+    ],
+    "5. Implement the pure SPOT, aggregate, and badge modules": [
+      {
+        "executionId": "52b81354-68d6-47f4-b4f3-0041544088c7",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792564297039
+      }
+    ],
+    "8.1 Implement `js/storage.js`": [
+      {
+        "executionId": "14276b43-2855-483d-8976-41181332388e",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792564345992
+      },
+      {
+        "executionId": "14276b43-2855-483d-8976-41181332388e",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792564517038
+      }
+    ],
+    "8.2 Implement `js/audio.js`": [
+      {
+        "executionId": "cfef0165-c4f9-4bc0-a190-d1b85e0f3425",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792564547327
+      },
+      {
+        "executionId": "cfef0165-c4f9-4bc0-a190-d1b85e0f3425",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792564754867
+      }
+    ],
+    "8.4 Implement `js/a11y.js`": [
+      {
+        "executionId": "c62e3f04-5a35-4040-8913-fdbd45913848",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792564786286
+      },
+      {
+        "executionId": "c62e3f04-5a35-4040-8913-fdbd45913848",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792564911588
+      }
+    ],
+    "8.5 Rebuild `styles.css` for accessibility and layout": [
+      {
+        "executionId": "bc87226b-6874-424e-995f-6d5e333476cd",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792564945300
+      },
+      {
+        "executionId": "bc87226b-6874-424e-995f-6d5e333476cd",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792565133037
+      }
+    ],
+    "8. Implement the browser shells: storage, audio, accessibility, styles": [
+      {
+        "executionId": "bc87226b-6874-424e-995f-6d5e333476cd",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792565133310
+      }
+    ],
+    "6.1 Implement the run state and core transitions in `js/engine.js`": [
+      {
+        "executionId": "9487ef35-b75e-4240-b24a-ae19b1806de8",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792565168118
+      },
+      {
+        "executionId": "9487ef35-b75e-4240-b24a-ae19b1806de8",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792565343749
+      }
+    ],
+    "9.1 Rebuild `index.html` as the game page shell": [
+      {
+        "executionId": "a3081d16-3fd5-4fbf-ac1b-adcf52ef8ea5",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792565397254
+      },
+      {
+        "executionId": "a3081d16-3fd5-4fbf-ac1b-adcf52ef8ea5",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792565505615
+      }
+    ],
+    "6.2 Implement scoring and the clue cost in `js/engine.js`": [
+      {
+        "executionId": "1b1454b6-cb1d-4228-b44e-f830bb252b1a",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792565599499
+      },
+      {
+        "executionId": "1b1454b6-cb1d-4228-b44e-f830bb252b1a",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792565633135
+      },
+      {
+        "executionId": "1b1454b6-cb1d-4228-b44e-f830bb252b1a",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792565794857
+      }
+    ],
+    "6.3 Implement SPOT recording and pause snapshot/restore in `js/engine.js`": [
+      {
+        "executionId": "1b1454b6-cb1d-4228-b44e-f830bb252b1a",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792565599824
+      },
+      {
+        "executionId": "135bf73e-c0da-486d-9394-bf7929475a3f",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792565821128
+      },
+      {
+        "executionId": "135bf73e-c0da-486d-9394-bf7929475a3f",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792565993040
+      }
+    ],
+    "7. Checkpoint - run the harness": [
+      {
+        "executionId": "1b1454b6-cb1d-4228-b44e-f830bb252b1a",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792565600178
+      },
+      {
+        "executionId": "8fdd704a-a564-4d4a-aee6-5365bc9b5f17",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792566210509
+      },
+      {
+        "executionId": "8fdd704a-a564-4d4a-aee6-5365bc9b5f17",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792566213478
+      }
+    ],
+    "9.2 Implement the Start, Loading, and Error screens in `js/ui.js`": [
+      {
+        "executionId": "1b1454b6-cb1d-4228-b44e-f830bb252b1a",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792565600469
+      },
+      {
+        "executionId": "353e0949-95d4-4950-a92a-91c1259f3f18",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792566261431
+      },
+      {
+        "executionId": "353e0949-95d4-4950-a92a-91c1259f3f18",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792566542764
+      }
+    ],
+    "9.3 Implement the case screen and candidate controls in `js/ui.js`": [
+      {
+        "executionId": "1b1454b6-cb1d-4228-b44e-f830bb252b1a",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792565600759
+      },
+      {
+        "executionId": "95454e1c-a8dd-4ddb-9683-ad9caa9672a7",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792566666996
+      },
+      {
+        "executionId": "95454e1c-a8dd-4ddb-9683-ad9caa9672a7",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792567864216
+      }
+    ],
+    "9.4 Implement answer feedback and the unmask in `js/ui.js`": [
+      {
+        "executionId": "1b1454b6-cb1d-4228-b44e-f830bb252b1a",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792565601059
+      },
+      {
+        "executionId": "95454e1c-a8dd-4ddb-9683-ad9caa9672a7",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792567873364
+      },
+      {
+        "executionId": "95454e1c-a8dd-4ddb-9683-ad9caa9672a7",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792568539121
+      }
+    ],
+    "9.5 Implement the SPOT toolkit panel and the clue button in `js/ui.js`": [
+      {
+        "executionId": "1b1454b6-cb1d-4228-b44e-f830bb252b1a",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792565601336
+      },
+      {
+        "executionId": "95454e1c-a8dd-4ddb-9683-ad9caa9672a7",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792568552688
+      },
+      {
+        "executionId": "b514b803-0458-4943-adf8-1f4480a58ac5",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792569160310
+      },
+      {
+        "executionId": "b514b803-0458-4943-adf8-1f4480a58ac5",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792569164210
+      }
+    ],
+    "9.6 Implement the pause menu and mute wiring in `js/ui.js`": [
+      {
+        "executionId": "1b1454b6-cb1d-4228-b44e-f830bb252b1a",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792565601609
+      },
+      {
+        "executionId": "b514b803-0458-4943-adf8-1f4480a58ac5",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792569175269
+      },
+      {
+        "executionId": "b514b803-0458-4943-adf8-1f4480a58ac5",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792569392010
+      }
+    ],
+    "9.7 Implement the end screen and certificate in `js/ui.js`": [
+      {
+        "executionId": "1b1454b6-cb1d-4228-b44e-f830bb252b1a",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792565601896
+      },
+      {
+        "executionId": "b514b803-0458-4943-adf8-1f4480a58ac5",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792569399615
+      },
+      {
+        "executionId": "b514b803-0458-4943-adf8-1f4480a58ac5",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792569625893
+      }
+    ],
+    "9.8 Wire everything together in `js/main.js`": [
+      {
+        "executionId": "1b1454b6-cb1d-4228-b44e-f830bb252b1a",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792565602269
+      },
+      {
+        "executionId": "b514b803-0458-4943-adf8-1f4480a58ac5",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792569659666
+      },
+      {
+        "executionId": "b514b803-0458-4943-adf8-1f4480a58ac5",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792569968310
+      }
+    ],
+    "10.1 Implement `teacher.html` and `js/teacher.js`": [
+      {
+        "executionId": "1b1454b6-cb1d-4228-b44e-f830bb252b1a",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792565602568
+      },
+      {
+        "executionId": "b514b803-0458-4943-adf8-1f4480a58ac5",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792569980551
+      },
+      {
+        "executionId": "b514b803-0458-4943-adf8-1f4480a58ac5",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792570177684
+      }
+    ],
+    "10.2 Implement `sources.html` and `js/sources.js`": [
+      {
+        "executionId": "1b1454b6-cb1d-4228-b44e-f830bb252b1a",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792565602865
+      },
+      {
+        "executionId": "b514b803-0458-4943-adf8-1f4480a58ac5",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792570186664
+      },
+      {
+        "executionId": "b514b803-0458-4943-adf8-1f4480a58ac5",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792570657223
+      }
+    ],
+    "12.1 Remove `script.js` and confirm the pages stay self-contained": [
+      {
+        "executionId": "1b1454b6-cb1d-4228-b44e-f830bb252b1a",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792565603179
+      },
+      {
+        "executionId": "b514b803-0458-4943-adf8-1f4480a58ac5",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792570667184
+      },
+      {
+        "executionId": "b514b803-0458-4943-adf8-1f4480a58ac5",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792570699107
+      }
+    ],
+    "14. Final checkpoint": [
+      {
+        "executionId": "1b1454b6-cb1d-4228-b44e-f830bb252b1a",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792565603464
+      },
+      {
+        "executionId": "b514b803-0458-4943-adf8-1f4480a58ac5",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792570709801
+      },
+      {
+        "executionId": "b514b803-0458-4943-adf8-1f4480a58ac5",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792570800949
+      }
+    ],
+    "6. Implement the pure engine: state machine and scoring": [
+      {
+        "executionId": "135bf73e-c0da-486d-9394-bf7929475a3f",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792565993288
+      }
+    ],
+    "9. Build the game page and UI": [
+      {
+        "executionId": "b514b803-0458-4943-adf8-1f4480a58ac5",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792569968733
+      }
+    ],
+    "10. Build the teacher page and source dashboard": [
+      {
+        "executionId": "b514b803-0458-4943-adf8-1f4480a58ac5",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792570657716
+      }
+    ],
+    "12. Retire the old script and audit for third-party code": [
+      {
+        "executionId": "b514b803-0458-4943-adf8-1f4480a58ac5",
+        "chatSessionId": "sess_8292a567-5bbc-4ff9-a719-f6392f1399a6",
+        "timestamp": 1792570699421
+      }
+    ],
+    "11.1 Write property test for the absence of free-text input": [
+      {
+        "executionId": "9e41df71-ac79-4250-93b1-40240cefdbee",
+        "chatSessionId": "sess_92efe645-5f22-43da-97ef-450d66899c95",
+        "timestamp": 1792571332305
+      }
+    ],
+    "11.2 Write property test for instruction and feedback copy": [
+      {
+        "executionId": "9e41df71-ac79-4250-93b1-40240cefdbee",
+        "chatSessionId": "sess_92efe645-5f22-43da-97ef-450d66899c95",
+        "timestamp": 1792571332987
+      }
+    ],
+    "11.3 Write property test for Confident Bot answers": [
+      {
+        "executionId": "9e41df71-ac79-4250-93b1-40240cefdbee",
+        "chatSessionId": "sess_92efe645-5f22-43da-97ef-450d66899c95",
+        "timestamp": 1792571334148
+      }
+    ],
+    "11.4 Write property test for explanation length": [
+      {
+        "executionId": "9e41df71-ac79-4250-93b1-40240cefdbee",
+        "chatSessionId": "sess_92efe645-5f22-43da-97ef-450d66899c95",
+        "timestamp": 1792571334993
+      }
+    ],
+    "11.5 Write unit tests for the game UI": [
+      {
+        "executionId": "9e41df71-ac79-4250-93b1-40240cefdbee",
+        "chatSessionId": "sess_92efe645-5f22-43da-97ef-450d66899c95",
+        "timestamp": 1792571335669
+      }
+    ],
+    "11.6 Write unit tests for the teacher and source pages": [
+      {
+        "executionId": "9e41df71-ac79-4250-93b1-40240cefdbee",
+        "chatSessionId": "sess_92efe645-5f22-43da-97ef-450d66899c95",
+        "timestamp": 1792571340989
+      }
+    ]
+  }
+}

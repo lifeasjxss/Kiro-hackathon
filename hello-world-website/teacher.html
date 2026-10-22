@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Detective — Teacher Page</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main>
+    <h1>Teacher Page</h1>
+    <p>
+      This page shows anonymous, class-wide totals from AI Detective.
+      There are no names and no individual student results here, just
+      counts of what kids missed and which tools they used.
+    </p>
+
+    <p id="device-notice">
+      These totals only count games played on this device and browser.
+      They do not combine results from other computers.
+    </p>
+
+    <p id="empty-state" hidden></p>
+
+    <section id="miss-section">
+      <h2>Mistake types kids miss most</h2>
+      <ul id="miss-totals"></ul>
+    </section>
+
+    <section id="spot-section">
+      <h2>Which SPOT tool gets used most</h2>
+      <ul id="spot-totals"></ul>
+    </section>
+
+    <p><a href="index.html">Back to the game</a></p>
+  </main>
+
+  <script type="module" src="js/teacher.js"></script>
+</body>
+</html>

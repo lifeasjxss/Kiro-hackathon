@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>AI Detective — Test Harness</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!--
+    This page is the in-browser test harness for AI Detective's pure logic
+    modules. It is dev-only: it is never linked from the game pages
+    (index.html, teacher.html, sources.html) and ships nothing to them.
+
+    No build step, no bundler, no npm install. It imports plain ES modules
+    directly.
+
+    HOW TO RUN:
+      ES module imports are subject to the browser's CORS rules for the
+      file:// protocol, so double-clicking this file may fail to load the
+      modules in some browsers (Chrome in particular blocks file:// module
+      imports). If that happens, serve this folder with any static file
+      server and open it over http instead, for example:
+
+        python -m http.server 8000     (then open http://localhost:8000/tests/)
+
+      or use an editor extension such as VS Code "Live Server". This is
+      purely a local developer convenience — it is not a build step and
+      nothing about the deployed site changes.
+  -->
+  <style>
+    :root {
+      color-scheme: light dark;
+    }
+    body {
+      font-family: system-ui, -apple-system, Segoe UI, sans-serif;
+      max-width: 720px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      line-height: 1.5;
+    }
+    h1 {
+      font-size: 1.4rem;
+    }
+    #summary {
+      font-size: 1.1rem;
+      font-weight: 600;
+      padding: 0.75rem 1rem;
+      border-radius: 0.5rem;
+      margin: 1rem 0;
+    }
+    #summary.pass {
+      background: #e6f4ea;
+      color: #14532d;
+    }
+    #summary.fail {
+      background: #fdecea;
+      color: #7f1d1d;
+    }
+    ul#results {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    li.result {
+      padding: 0.5rem 0.75rem;
+      border-bottom: 1px solid #ddd;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+    .status {
+      font-weight: 600;
+      margin-right: 0.5rem;
+    }
+    li.result.pass .status {
+      color: #15803d;
+    }
+    li.result.fail .status {
+      color: #b91c1c;
+    }
+    .error {
+      font-family: ui-monospace, Consolas, monospace;
+      font-size: 0.85rem;
+      color: #7f1d1d;
+      white-space: pre-wrap;
+    }
+    button#run {
+      font-size: 1rem;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>AI Detective — Test Harness</h1>
+  <p>
+    Runs the in-browser unit and property-based tests for the pure logic
+    modules. No install step; this page is not shipped with the game.
+  </p>
+  <button id="run" type="button">Run tests</button>
+  <div id="summary" role="status" aria-live="polite"></div>
+  <ul id="results"></ul>
+
+  <script type="module">
+    import { runAll } from "./vendor/assert.js";
+
+    // Import test files as ES modules. Each import's side effect is to
+    // register its tests via test(...) from vendor/assert.js. Add more
+    // test file imports here as later tasks add *.test.js files alongside
+    // the pure modules.
+    import "./pbt.self-test.js";
+    import "./content.test.js";
+
+    const summaryEl = document.getElementById("summary");
+    const resultsEl = document.getElementById("results");
+    const runButton = document.getElementById("run");
+
+    function render(report) {
+      resultsEl.innerHTML = "";
+      for (const r of report.results) {
+        const li = document.createElement("li");
+        li.className = `result ${r.pass ? "pass" : "fail"}`;
+
+        const status = document.createElement("span");
+        status.className = "status";
+        status.textContent = r.pass ? "PASS" : "FAIL";
+        li.appendChild(status);
+
+        const name = document.createElement("span");
+        name.textContent = r.name;
+        li.appendChild(name);
+
+        if (!r.pass && r.error) {
+          const err = document.createElement("div");
+          err.className = "error";
+          err.textContent = r.error;
+          li.appendChild(err);
+        }
+
+        resultsEl.appendChild(li);
+      }
+
+      summaryEl.className = report.failed === 0 ? "pass" : "fail";
+      summaryEl.textContent = `${report.passed} passed, ${report.failed} failed (${report.total} total)`;
+    }
+
+    async function run() {
+      summaryEl.className = "";
+      summaryEl.textContent = "Running...";
+      resultsEl.innerHTML = "";
+      const report = await runAll();
+      render(report);
+    }
+
+    runButton.addEventListener("click", run);
+
+    // Run automatically on page load too, so opening the page is enough.
+    run();
+  </script>
+</body>
+</html>

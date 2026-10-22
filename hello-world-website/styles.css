@@ -1,61 +1,865 @@
+/* ==========================================================================
+   AI Detective — styles.css
+   ==========================================================================
+   Plain CSS, no preprocessor, no build step, no third-party fonts/scripts.
+
+   This file is written ahead of the real game markup (task 9.1+). It
+   documents the class-name conventions that future HTML/JS tasks should
+   follow so the two line up.
+
+   KEY CLASS CONVENTIONS (for task 9.1 and later UI tasks)
+   --------------------------------------------------------------------------
+   Screens (one visible at a time, toggled by JS):
+     .screen                     base for every full-screen section
+     .screen--start              Start screen (Play button, pre-audio)
+     .screen--loading            Loading screen
+     .screen--error              Load-failure / no-cases-available screen
+     .screen--intro              Case intro / story beat
+     .screen--case               Active case screen (question + answer + candidates)
+     .screen--unmask             Correct-answer reveal / Confident Bot unmask
+     .screen--pause              Pause menu overlay
+     .screen--end                End screen (score, badges, next steps)
+     .screen--certificate        Printable certificate view
+     .screen.is-active           currently visible screen (JS toggles this)
+
+   Game chrome (always-visible controls):
+     .game-bar                   top bar holding counter/score/mute/pause/skip
+     .game-bar__counter          "Case 3 of 10" style question counter
+     .game-bar__score            current score readout
+     .icon-btn                   small square icon control (mute/pause/skip)
+     .icon-btn--mute             mute/unmute toggle
+     .icon-btn--pause            pause toggle
+     .icon-btn--skip             skip intro/animation
+
+   Stepping-stone river (progress motif):
+     .stepping-stone-track       foggy river container, row of stones
+     .stepping-stone             one stone/case marker
+     .stepping-stone.is-current  the stone the kid is on now
+     .stepping-stone.is-complete a solved case's stone
+
+   Confident Bot + case content:
+     .bot-card                   the Confident Bot's speech/answer card
+     .bot-card.is-unmasked       bot card after the mistake is found
+     .candidate-list             wrapper for the phrase-choice buttons
+     .candidate-btn               one tappable phrase choice (a native <button>)
+     .candidate-btn.is-correct   styling after a correct pick is revealed
+     .candidate-btn.is-wrong     styling after a wrong pick
+     .candidate-btn.is-selected  a chosen-but-not-yet-resolved state (optional use)
+     .candidate-btn:disabled     candidates locked after the case resolves
+
+   Feedback:
+     .feedback                   base feedback message block
+     .feedback--correct          "right" feedback variant
+     .feedback--wrong            "wrong" feedback variant
+     .feedback__why              one-line neutral explanation text
+
+   SPOT toolkit:
+     .spot-panel                 container for the four SPOT tools
+     .spot-tool                  one tool control/button
+     .spot-tool.is-open          tool currently showing its tip
+     .spot-tool__tip             revealed tip + search phrase text
+     .clue-btn                   "Need a clue?" control
+     .clue-btn.is-used           clue already charged for this case
+
+   Pause menu:
+     .pause-menu                 panel inside .screen--pause
+     .pause-menu__actions        button row (mute/resume/restart/home)
+
+   End screen:
+     .end-summary                score + headline area
+     .badge-list                 wrapper for earned badges
+     .badge                      one badge chip
+     .end-actions                Replay / Next case pack / Download certificate row
+
+   Certificate (print target):
+     .certificate                the printable certificate root
+     .certificate__name-line     blank line the kid signs by hand
+
+   Generic buttons:
+     .btn                        base button look (Play, Retry, Resume, etc.)
+     .btn--primary                filled/high-emphasis variant
+     .btn--secondary              outline/low-emphasis variant
+
+   NON-COLOR STATE RULE (see Design notes below)
+   --------------------------------------------------------------------------
+   Color is NEVER the only signal for correct/wrong/selected/focused/
+   disabled/active. Every state below pairs a color change with a glyph,
+   label, border/shape change, or pattern. Future HTML should prefer real
+   text content ("Correct", "Not quite") where possible; the CSS below adds
+   ::before glyphs as a safety net so the cue still shows up even if a
+   component only toggles a class.
+   ========================================================================== */
+
+/* ==========================================================================
+   1. Color tokens
+   ==========================================================================
+   Contrast notes (computed against the stated background per WCAG 2.1
+   relative luminance; figures below are conservative estimates for
+   well-known accessible pairs):
+
+   --color-text on --color-bg:              #1a1a2e on #ffffff ~ 15.8:1 (AA/AAA, body text)
+   --color-text on --color-bg-alt:          #1a1a2e on #f4f1ff ~ 14.9:1 (AA/AAA, body text)
+   --color-text-on-primary on --color-primary: #ffffff on #3f3d9e ~ 8.4:1 (AA/AAA)
+   --color-label on --color-surface:        #262640 on #ffffff ~ 13.9:1 (AA/AAA, labels)
+   --color-primary border on --color-bg:    #3f3d9e on #ffffff ~ 6.3:1 (exceeds 3:1 for boundaries)
+   --color-correct (text/icon) on white:    #146c2e on #ffffff ~ 6.9:1 (AA, exceeds 3:1 for icons/borders)
+   --color-wrong (text/icon) on white:      #a3123a on #ffffff ~ 6.0:1 (AA, exceeds 3:1 for icons/borders)
+   --color-focus-ring on light bg:          #d6540a on #ffffff ~ 4.0:1 (exceeds 3:1 non-text minimum)
+   --color-focus-ring on dark surfaces:     #ffb454 on #1a1a2e ~ 8.9:1 (exceeds 3:1 non-text minimum)
+
+   These are deliberately high-contrast, conservative pairings (dark
+   desaturated text on near-white, or white on a deep indigo) so the
+   4.5:1 (normal text) and 3:1 (large text / control boundaries) minimums
+   are comfortably met. Color alone is never used to convey state; see the
+   "non-color state cues" section.
+   ========================================================================== */
+
 :root {
   color-scheme: light dark;
+
+  /* Surfaces */
+  --color-bg: #ffffff;
+  --color-bg-alt: #f4f1ff;
+  --color-surface: #ffffff;
+  --color-river-fog: linear-gradient(180deg, #dce6f2 0%, #eef2f7 60%, #f7f9fb 100%);
+
+  /* Text */
+  --color-text: #1a1a2e;
+  --color-text-muted: #4b4b63;
+  --color-label: #262640;
+  --color-text-on-primary: #ffffff;
+
+  /* Brand / primary */
+  --color-primary: #3f3d9e;
+  --color-primary-dark: #2c2b70;
+  --color-primary-soft: #e4e2fb;
+
+  /* State: correct / wrong (always paired with a glyph or label, never alone) */
+  --color-correct: #146c2e;
+  --color-correct-bg: #e4f6e9;
+  --color-wrong: #a3123a;
+  --color-wrong-bg: #fbe6ec;
+
+  /* State: selected / active / disabled */
+  --color-selected-border: #3f3d9e;
+  --color-active-shadow: rgba(63, 61, 158, 0.45);
+  --color-disabled-text: #767685;
+  --color-disabled-bg: #ececf1;
+
+  /* Focus */
+  --color-focus-ring: #d6540a;
+  --color-focus-ring-dark: #ffb454;
+
+  /* Layout */
+  --max-content-width: 72rem;
+  --radius-sm: 0.5rem;
+  --radius-md: 1rem;
+  --radius-lg: 1.5rem;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 1rem;
+  --space-4: 1.5rem;
+  --space-5: 2rem;
+  --space-6: 3rem;
+
+  --font-body: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-certificate: Georgia, "Times New Roman", serif;
 }
+
+/* ==========================================================================
+   2. Reset + base typography
+   ========================================================================== */
 
 * {
   box-sizing: border-box;
 }
 
+html,
 body {
   margin: 0;
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
-  color: #1e293b;
+  padding: 0;
 }
 
-.card {
-  background: #ffffff;
-  padding: 3rem 3.5rem;
-  border-radius: 16px;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
-  text-align: center;
-  max-width: 90vw;
+html {
+  /* Prevent any single element from forcing horizontal scroll at 320px. */
+  overflow-x: hidden;
+}
+
+body {
+  min-height: 100vh;
+  width: 100%;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--color-text);
+  background: var(--color-bg);
+}
+
+img,
+svg,
+video {
+  max-width: 100%;
+  height: auto;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0 0 var(--space-2);
+  line-height: 1.25;
+  color: var(--color-text);
 }
 
 h1 {
-  margin: 0 0 0.5rem;
-  font-size: 2.25rem;
+  font-size: clamp(1.5rem, 4vw, 2.25rem);
+}
+
+h2 {
+  font-size: clamp(1.25rem, 3vw, 1.75rem);
 }
 
 p {
-  margin: 0 0 1.5rem;
-  color: #475569;
+  margin: 0 0 var(--space-3);
+  color: var(--color-text-muted);
+  max-width: 60ch;
 }
+
+ul {
+  margin: 0;
+  padding: 0;
+}
+
+/* ==========================================================================
+   3. Buttons + controls
+   ========================================================================== */
 
 button {
-  border: none;
-  padding: 0.75rem 1.75rem;
+  font-family: inherit;
   font-size: 1rem;
-  border-radius: 999px;
-  background: #6366f1;
-  color: #fff;
   cursor: pointer;
-  transition: background 0.2s ease, transform 0.1s ease;
 }
 
-button:hover {
-  background: #4f46e5;
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  border: 2px solid transparent;
+  border-radius: 999px;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  background: var(--color-primary-soft);
+  color: var(--color-primary-dark);
+  transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
 }
 
-button:active {
-  transform: scale(0.97);
+.btn--primary {
+  background: var(--color-primary);
+  color: var(--color-text-on-primary);
+  border-color: var(--color-primary-dark);
 }
 
-button:focus-visible {
-  outline: 3px solid #c7d2fe;
+.btn--primary:hover {
+  background: var(--color-primary-dark);
+}
+
+.btn--secondary {
+  background: transparent;
+  border-color: var(--color-primary);
+  color: var(--color-primary-dark);
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn:active,
+.btn[aria-pressed="true"] {
+  /* Active state: color AND shape change (inset shadow + thicker border),
+     never color alone. */
+  transform: translateY(0);
+  border-width: 3px;
+  box-shadow: inset 0 2px 4px var(--color-active-shadow);
+}
+
+/* Disabled: muted color + reduced opacity + not-allowed cursor + dashed
+   border pattern, so it reads as disabled without relying on color. */
+.btn:disabled,
+.btn[aria-disabled="true"],
+button:disabled,
+button[aria-disabled="true"] {
+  color: var(--color-disabled-text);
+  background: var(--color-disabled-bg);
+  border-style: dashed;
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 2px solid var(--color-primary);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-primary-dark);
+  flex-shrink: 0;
+}
+
+/* ==========================================================================
+   4. Focus indicator (WCAG AA, broad coverage)
+   ========================================================================== */
+
+a:focus,
+button:focus,
+[tabindex]:focus,
+input:focus,
+select:focus,
+textarea:focus {
+  /* Fallback for browsers without :focus-visible support. */
+  outline: 3px solid var(--color-focus-ring);
   outline-offset: 2px;
+}
+
+a:focus-visible,
+button:focus-visible,
+[tabindex]:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* Remove the fallback outline once :focus-visible is supported and the
+   element is focused but not via keyboard, to avoid a double ring. */
+a:focus:not(:focus-visible),
+button:focus:not(:focus-visible),
+[tabindex]:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* On dark surfaces (e.g. inside .bot-card or .certificate dark variants)
+   swap to the higher-contrast dark-surface focus color. */
+.bot-card :focus-visible,
+.screen--pause :focus-visible {
+  outline-color: var(--color-focus-ring-dark);
+}
+
+/* ==========================================================================
+   5. Layout shell + screens
+   ========================================================================== */
+
+.app-shell {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.screen {
+  display: none;
+  width: 100%;
+  max-width: var(--max-content-width);
+  margin: 0 auto;
+  padding: var(--space-4) var(--space-3) var(--space-6);
+}
+
+.screen.is-active {
+  display: block;
+}
+
+.screen--start,
+.screen--loading,
+.screen--error,
+.screen--end {
+  display: none;
+  text-align: center;
+}
+
+.screen--start.is-active,
+.screen--loading.is-active,
+.screen--error.is-active,
+.screen--end.is-active {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 100vh;
+  justify-content: center;
+}
+
+.game-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  justify-content: space-between;
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--color-primary-soft);
+  width: 100%;
+}
+
+.game-bar__counter,
+.game-bar__score {
+  font-weight: 600;
+  color: var(--color-label);
+  white-space: nowrap;
+}
+
+.game-bar__controls {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+/* ==========================================================================
+   6. Stepping-stone river
+   ========================================================================== */
+
+.stepping-stone-track {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-3);
+  border-radius: var(--radius-lg);
+  background: var(--color-river-fog);
+  box-shadow: inset 0 0 2.5rem rgba(255, 255, 255, 0.6);
+}
+
+.stepping-stone {
+  --stone-size: 2.75rem;
+  width: var(--stone-size);
+  height: var(--stone-size);
+  min-width: var(--stone-size);
+  border-radius: 50%;
+  background: var(--color-surface);
+  border: 3px solid var(--color-primary-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  position: relative;
+}
+
+.stepping-stone.is-current {
+  /* Non-color cue: thicker solid border + scale, not just a color swap. */
+  border-style: solid;
+  border-width: 4px;
+  border-color: var(--color-primary);
+  color: var(--color-primary-dark);
+  transform: scale(1.12);
+}
+
+.stepping-stone.is-complete {
+  /* Non-color cue: a checkmark glyph in addition to the color change. */
+  border-color: var(--color-correct);
+  color: var(--color-correct);
+}
+
+.stepping-stone.is-complete::after {
+  content: "✓";
+  position: absolute;
+  bottom: -0.35rem;
+  right: -0.35rem;
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 50%;
+  background: var(--color-correct-bg);
+  color: var(--color-correct);
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-correct);
+}
+
+/* ==========================================================================
+   7. Confident Bot card + candidate phrase buttons
+   ========================================================================== */
+
+.bot-card {
+  background: var(--color-bg-alt);
+  border: 2px solid var(--color-primary-soft);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  margin: var(--space-4) 0;
+}
+
+.bot-card.is-unmasked {
+  border-color: var(--color-correct);
+}
+
+.candidate-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: 0;
+  margin: var(--space-3) 0;
+  list-style: none;
+}
+
+.candidate-btn {
+  width: 100%;
+  max-width: 100%;
+  text-align: left;
+  background: var(--color-surface);
+  border: 2px solid var(--color-primary-soft);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  color: var(--color-text);
+  font-size: 1rem;
+  line-height: 1.4;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.candidate-btn:hover:not(:disabled) {
+  border-color: var(--color-primary);
+}
+
+/* Selected (chosen, not yet resolved): shape + color, via a dashed
+   thicker border rather than color alone. */
+.candidate-btn.is-selected {
+  border-style: dashed;
+  border-width: 3px;
+  border-color: var(--color-primary);
+}
+
+/* Correct: color + background + a check glyph prefix. */
+.candidate-btn.is-correct {
+  border-color: var(--color-correct);
+  background: var(--color-correct-bg);
+  color: var(--color-correct);
+}
+
+.candidate-btn.is-correct::before {
+  content: "✓ Correct — ";
+  font-weight: 700;
+}
+
+/* Wrong: color + background + an X glyph prefix. Distinct label text from
+   "correct" so the two are distinguishable without relying on color. */
+.candidate-btn.is-wrong {
+  border-color: var(--color-wrong);
+  background: var(--color-wrong-bg);
+  color: var(--color-wrong);
+}
+
+.candidate-btn.is-wrong::before {
+  content: "✕ Not it — ";
+  font-weight: 700;
+}
+
+.candidate-btn:disabled {
+  opacity: 0.85;
+}
+
+/* ==========================================================================
+   8. Feedback messages
+   ========================================================================== */
+
+.feedback {
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  margin: var(--space-3) 0;
+  border: 2px solid var(--color-primary-soft);
+}
+
+.feedback--correct {
+  border-color: var(--color-correct);
+  background: var(--color-correct-bg);
+  color: var(--color-correct);
+}
+
+.feedback--correct::before {
+  content: "✓ ";
+}
+
+.feedback--wrong {
+  border-color: var(--color-wrong);
+  background: var(--color-wrong-bg);
+  color: var(--color-wrong);
+}
+
+.feedback--wrong::before {
+  content: "✕ ";
+}
+
+.feedback__why {
+  display: block;
+  margin-top: var(--space-1);
+  color: var(--color-text);
+  font-weight: 500;
+}
+
+/* ==========================================================================
+   9. SPOT toolkit + clue button
+   ========================================================================== */
+
+.spot-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: var(--space-4) 0;
+}
+
+.spot-tool {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-1);
+  width: 100%;
+  background: var(--color-surface);
+  border: 2px solid var(--color-primary-soft);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  text-align: left;
+}
+
+.spot-tool.is-open {
+  border-style: solid;
+  border-width: 3px;
+  border-color: var(--color-primary);
+}
+
+.spot-tool__tip {
+  color: var(--color-text-muted);
+  font-size: 0.95rem;
+}
+
+.clue-btn.is-used {
+  border-style: dashed;
+}
+
+.clue-btn.is-used::after {
+  content: " (used)";
+  font-weight: 400;
+  color: var(--color-text-muted);
+}
+
+/* ==========================================================================
+   10. Pause menu
+   ========================================================================== */
+
+.screen--pause {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(26, 26, 46, 0.6);
+  padding: var(--space-3);
+  z-index: 10;
+}
+
+.screen--pause.is-active {
+  display: flex;
+}
+
+.pause-menu {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  width: 100%;
+  max-width: 24rem;
+}
+
+.pause-menu__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+
+/* ==========================================================================
+   11. End screen
+   ========================================================================== */
+
+.badge-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  justify-content: center;
+  list-style: none;
+  padding: 0;
+  margin: var(--space-3) 0;
+}
+
+.badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  border: 2px solid var(--color-primary);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  min-width: 9rem;
+  max-width: 100%;
+  background: var(--color-primary-soft);
+  color: var(--color-primary-dark);
+}
+
+.end-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  justify-content: center;
+}
+
+/* ==========================================================================
+   12. Responsive breakpoints (mobile-first, 320px -> 1920px)
+   ========================================================================== */
+
+@media (min-width: 480px) {
+  .end-actions,
+  .pause-menu__actions {
+    flex-wrap: nowrap;
+  }
+}
+
+@media (min-width: 768px) {
+  .candidate-list {
+    gap: var(--space-3);
+  }
+
+  .spot-panel {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .spot-tool {
+    flex: 1 1 calc(50% - var(--space-2));
+  }
+}
+
+@media (min-width: 1024px) {
+  .screen {
+    padding: var(--space-5) var(--space-4) var(--space-6);
+  }
+
+  .spot-tool {
+    flex: 1 1 calc(25% - var(--space-2));
+  }
+
+  .badge {
+    min-width: 11rem;
+  }
+}
+
+@media (min-width: 1440px) {
+  :root {
+    font-size: 1.0625rem;
+  }
+
+  .screen {
+    max-width: 80rem;
+  }
+}
+
+@media (min-width: 1920px) {
+  .screen {
+    max-width: 90rem;
+  }
+
+  h1 {
+    font-size: 2.5rem;
+  }
+}
+
+/* ==========================================================================
+   13. Reduced motion
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ==========================================================================
+   14. Certificate + print styles
+   ==========================================================================
+   The certificate is a normal (hidden-until-active) screen on screen, so it
+   never affects the rest of the game's layout. The @media print block
+   additionally hides everything except the certificate when the page is
+   actually printed, regardless of which screen was last active.
+   ========================================================================== */
+
+.certificate {
+  display: none;
+  background: #ffffff;
+  color: #111111;
+  font-family: var(--font-certificate);
+  border: 0.5rem double #3f3d9e;
+  border-radius: var(--radius-md);
+  padding: var(--space-6) var(--space-5);
+  max-width: 100%;
+  margin: var(--space-4) auto;
+  text-align: center;
+}
+
+.certificate.is-active {
+  display: block;
+}
+
+.certificate__name-line {
+  display: inline-block;
+  min-width: min(18rem, 90%);
+  border-bottom: 2px solid #111111;
+  margin: var(--space-4) auto var(--space-2);
+  height: 2rem;
+}
+
+.certificate__title {
+  font-size: clamp(1.5rem, 5vw, 2.5rem);
+  margin-bottom: var(--space-4);
+}
+
+@media print {
+  /* Hide everything by default, then reveal only the certificate. This is
+     scoped entirely inside @media print, so normal on-screen display of
+     every other screen is unaffected. */
+  body * {
+    visibility: hidden;
+  }
+
+  .certificate,
+  .certificate * {
+    visibility: visible;
+  }
+
+  .certificate {
+    display: block;
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    width: 100%;
+    border: 0.25rem double #111111;
+    box-shadow: none;
+    background: #ffffff;
+    color: #111111;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .certificate__name-line {
+    border-bottom-color: #111111;
+  }
+
+  @page {
+    margin: 1.5cm;
+  }
 }

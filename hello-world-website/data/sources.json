@@ -1,0 +1,100 @@
+[
+  {
+    "id": "octopus-hearts-src",
+    "name": "Smithsonian Ocean — Cephalopods",
+    "url": "https://ocean.si.edu/ocean-life/invertebrates/cephalopods",
+    "dateAccessed": "2026-10-21",
+    "companySource": false
+  },
+  {
+    "id": "saturn-rings-src",
+    "name": "NASA Solar System Exploration — Saturn Rings",
+    "url": "https://solarsystem.nasa.gov/planets/saturn/in-depth/",
+    "dateAccessed": "2026-10-21",
+    "companySource": false
+  },
+  {
+    "id": "banana-berry-src",
+    "name": "Encyclopedia Britannica — Berry (fruit type)",
+    "url": "https://www.britannica.com/science/berry-fruit-type",
+    "dateAccessed": "2026-10-21",
+    "companySource": false
+  },
+  {
+    "id": "nba-shot-clock-src",
+    "name": "NBA Official — Rules",
+    "url": "https://official.nba.com/",
+    "dateAccessed": "2026-10-21",
+    "companySource": true
+  },
+  {
+    "id": "honey-never-spoils-src",
+    "name": "National Honey Board — Honey Nutrition & Facts",
+    "url": "https://www.honey.com/nutrition/",
+    "dateAccessed": "2026-10-21",
+    "companySource": true
+  },
+  {
+    "id": "shark-teeth-src",
+    "name": "Florida Museum of Natural History — Discover Sharks",
+    "url": "https://www.floridamuseum.ufl.edu/discover-fish/sharks/",
+    "dateAccessed": "2026-10-21",
+    "companySource": false
+  },
+  {
+    "id": "tennis-love-src",
+    "name": "USTA — Tennis Scoring Basics",
+    "url": "https://www.usta.com/",
+    "dateAccessed": "2026-10-21",
+    "companySource": true
+  },
+  {
+    "id": "everest-height-src",
+    "name": "National Geographic — Mount Everest",
+    "url": "https://www.nationalgeographic.com/",
+    "dateAccessed": "2026-10-21",
+    "companySource": false
+  },
+  {
+    "id": "apollo-11-src",
+    "name": "NASA — Apollo 11 Mission",
+    "url": "https://www.nasa.gov/mission/apollo-11/",
+    "dateAccessed": "2026-10-21",
+    "companySource": false
+  },
+  {
+    "id": "great-wall-space-src",
+    "name": "NASA — Myths About Seeing Structures From Space",
+    "url": "https://www.nasa.gov/",
+    "dateAccessed": "2026-10-21",
+    "companySource": false
+  },
+  {
+    "id": "mars-red-planet-src",
+    "name": "NASA Science — Mars",
+    "url": "https://science.nasa.gov/mars/",
+    "dateAccessed": "2026-10-21",
+    "companySource": false
+  },
+  {
+    "id": "cheetah-speed-src",
+    "name": "San Diego Zoo Wildlife Alliance — Cheetah",
+    "url": "https://sandiegozoo.org/animals/cheetah",
+    "dateAccessed": "2026-10-21",
+    "companySource": false
+  },
+  {
+    "id": "pizza-naples-src",
+    "name": "Smithsonian Magazine — History of Pizza",
+    "url": "https://www.smithsonianmag.com/",
+    "dateAccessed": "2026-10-21",
+    "companySource": false
+  },
+  {
+    "id": "bee-waggle-dance-src",
+    "name": "National Geographic — Honeybee Waggle Dance",
+    "url": "https://www.nationalgeographic.com/",
+    "dateAccessed": "2026-10-21",
+    "companySource": false
+  }
+]
