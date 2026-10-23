@@ -34,14 +34,32 @@ function capitalizeFirst(text) {
 }
 
 /**
- * Turn a SPOT tool key like "step_away" into a readable label like
- * "Step away": replace underscores with spaces, then capitalize the
- * first letter.
+ * Readable labels for each SPOT tool key, matching the exact button
+ * text shown in the game (index.html's four .spot-tool buttons) so a
+ * teacher sees the same name for a tool here as a kid sees in the
+ * game. A naive "replace underscores with spaces" transform reads
+ * fine for "step_away" ("Step away") but produces grammatically
+ * incomplete fragments for the other three keys (e.g. "Test decide"
+ * instead of "Test and decide"), so each label is spelled out here
+ * instead of derived.
+ * @type {Object<string, string>}
+ */
+const SPOT_TOOL_LABELS = {
+  step_away: "Step away",
+  pick_words: "Pick your search words",
+  open_sources: "Open other sources",
+  test_decide: "Test and decide",
+};
+
+/**
+ * Turn a SPOT tool key like "step_away" into its matching in-game
+ * label. Falls back to a plain word-replace for any unrecognized key,
+ * so this never throws on unexpected data.
  * @param {string} toolKey
  * @returns {string}
  */
 function spotToolLabel(toolKey) {
-  return capitalizeFirst(toolKey.replace(/_/g, " "));
+  return SPOT_TOOL_LABELS[toolKey] || capitalizeFirst(toolKey.replace(/_/g, " "));
 }
 
 /**

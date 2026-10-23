@@ -14,7 +14,6 @@
      .screen--start              Start screen (Play button, pre-audio)
      .screen--loading            Loading screen
      .screen--error              Load-failure / no-cases-available screen
-     .screen--intro              Case intro / story beat
      .screen--case               Active case screen (question + answer + candidates)
      .screen--unmask             Correct-answer reveal / Confident Bot unmask
      .screen--pause              Pause menu overlay
@@ -23,13 +22,13 @@
      .screen.is-active           currently visible screen (JS toggles this)
 
    Game chrome (always-visible controls):
-     .game-bar                   top bar holding counter/score/mute/pause/skip
+     .game-bar                   top bar holding counter/score/mute/pause
      .game-bar__counter          "Case 3 of 10" style question counter
      .game-bar__score            current score readout
-     .icon-btn                   small square icon control (mute/pause/skip)
+     .icon-btn                   small square icon control (mute/pause)
      .icon-btn--mute             mute/unmute toggle
      .icon-btn--pause            pause toggle
-     .icon-btn--skip             skip intro/animation
+     .icon-on / .icon-off        the two swapped glyphs inside .icon-btn--mute
 
    Stepping-stone river (progress motif):
      .stepping-stone-track       foggy river container, row of stones
@@ -74,6 +73,8 @@
    Certificate (print target):
      .certificate                the printable certificate root
      .certificate__name-line     blank line the kid signs by hand
+     .certificate__date-blank    blank line for today's date, filled in by hand
+     .certificate__hint          small caption under each blank line ("write X here")
 
    Generic buttons:
      .btn                        base button look (Play, Retry, Resume, etc.)
@@ -1085,7 +1086,13 @@ button:focus:not(:focus-visible),
    ========================================================================== */
 
 .certificate {
-  display: none;
+  /* Visibility is driven entirely by the parent .screen--certificate's
+     own .is-active rule (section 5); this element does not need (and
+     must not require) a second, separate .is-active class of its own.
+     An earlier version of this rule set `display: none` here and only
+     flipped it on a `.certificate.is-active` selector that nothing in
+     js/ui.js ever added, so the certificate body silently never
+     rendered even once the screen became active. */
   background: #ffffff;
   color: #111111;
   font-family: var(--font-certificate);
@@ -1095,10 +1102,6 @@ button:focus:not(:focus-visible),
   max-width: 100%;
   margin: var(--space-4) auto;
   text-align: center;
-}
-
-.certificate.is-active {
-  display: block;
 }
 
 /* Keep the certificate's <p> text in its own Georgia-based font rather
@@ -1111,10 +1114,69 @@ button:focus:not(:focus-visible),
 
 .certificate__name-line {
   display: inline-block;
-  min-width: min(18rem, 90%);
-  border-bottom: 2px solid #111111;
-  margin: var(--space-4) auto var(--space-2);
-  height: 2rem;
+  min-width: min(22rem, 90%);
+  /* Dashed, not solid: reads unmistakably as a "write here" fill-in
+     line rather than a stray horizontal rule or layout gap. */
+  border-bottom: 3px dashed #111111;
+  margin: var(--space-4) auto var(--space-1);
+  height: 2.25rem;
+}
+
+/* Small caption under each blank line, telling the kid (or whoever is
+   helping them) exactly what belongs there. Printed along with the
+   rest of the certificate, same as a real fill-in-the-blank form. */
+.certificate__hint {
+  font-family: var(--font-certificate);
+  font-size: 0.85rem;
+  font-style: italic;
+  color: #3f3d9e;
+  margin: 0 0 var(--space-3);
+}
+
+.certificate__score {
+  font-family: var(--font-certificate);
+  font-weight: 700;
+  margin-top: var(--space-4);
+}
+
+.certificate__badge-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-2);
+  list-style: none;
+  padding: 0;
+  margin: var(--space-2) auto var(--space-4);
+}
+
+.certificate__badge-list li {
+  border: 1px solid #3f3d9e;
+  border-radius: var(--radius-sm);
+  padding: var(--space-1) var(--space-2);
+  font-size: 0.9rem;
+}
+
+.certificate__date-line {
+  margin-top: var(--space-4);
+  margin-bottom: var(--space-1);
+}
+
+.certificate__date-blank {
+  display: inline-block;
+  min-width: 12rem;
+  /* Dashed, not solid: same "write here" signal as .certificate__name-line. */
+  border-bottom: 3px dashed #111111;
+  height: 1.6rem;
+  margin-left: var(--space-2);
+  vertical-align: bottom;
+}
+
+.certificate__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  justify-content: center;
+  margin-top: var(--space-4);
 }
 
 .certificate__title {
@@ -1156,7 +1218,8 @@ button:focus:not(:focus-visible),
     print-color-adjust: exact;
   }
 
-  .certificate__name-line {
+  .certificate__name-line,
+  .certificate__date-blank {
     border-bottom-color: #111111;
   }
 

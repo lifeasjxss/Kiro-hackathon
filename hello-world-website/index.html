@@ -36,17 +36,6 @@
     </section>
 
     <!-- ============================================================
-         Intro / story beat screen
-         ============================================================ -->
-    <section class="screen screen--intro" id="screen-intro" aria-hidden="true">
-      <h2 id="intro-heading">A new case has landed</h2>
-      <p id="intro-text">A kid in town asked the Confident Bot a question. Let's see what it said.</p>
-      <button class="icon-btn icon-btn--skip" id="intro-skip-btn" type="button" aria-label="Skip intro">
-        <span aria-hidden="true">⏭</span>
-      </button>
-    </section>
-
-    <!-- ============================================================
          Case screen (main gameplay)
          ============================================================ -->
     <section class="screen screen--case" id="screen-case" aria-hidden="true">
@@ -55,14 +44,12 @@
         <span class="game-bar__counter" id="question-counter" aria-live="polite">Case 1 of 10</span>
         <span class="game-bar__score" id="score-display" aria-live="polite">Score: 0</span>
         <div class="game-bar__controls">
-          <button class="icon-btn icon-btn--mute" id="mute-btn" type="button" aria-label="Mute music" aria-pressed="false">
-            <span aria-hidden="true">🔊</span>
+          <button class="icon-btn icon-btn--mute" id="mute-btn" type="button" aria-label="Mute sound" aria-pressed="false">
+            <span class="icon-on" aria-hidden="true">🔊</span>
+            <span class="icon-off" aria-hidden="true" hidden>🔇</span>
           </button>
           <button class="icon-btn icon-btn--pause" id="pause-btn" type="button" aria-label="Pause game">
             <span aria-hidden="true">⏸</span>
-          </button>
-          <button class="icon-btn icon-btn--skip" id="case-skip-btn" type="button" aria-label="Skip animation">
-            <span aria-hidden="true">⏭</span>
           </button>
         </div>
       </div>
@@ -125,7 +112,11 @@
       <div class="pause-menu">
         <h2 id="pause-heading">Paused</h2>
         <div class="pause-menu__actions">
-          <button class="btn btn--secondary" id="pause-mute-btn" type="button">Mute</button>
+          <button class="btn btn--secondary" id="pause-mute-btn" type="button" aria-pressed="false">
+            <span class="icon-on" aria-hidden="true">🔊</span>
+            <span class="icon-off" aria-hidden="true" hidden>🔇</span>
+            <span id="pause-mute-label">Mute</span>
+          </button>
           <button class="btn btn--primary" id="resume-btn" type="button">Resume</button>
           <button class="btn btn--secondary" id="restart-btn" type="button">Restart</button>
           <button class="btn btn--secondary" id="home-btn" type="button">Home</button>
@@ -156,16 +147,27 @@
          ============================================================ -->
     <section class="screen screen--certificate" id="screen-certificate" aria-hidden="true">
       <div class="certificate">
-        <h2 class="certificate__title">Certificate of Detective Achievement</h2>
+        <h2 class="certificate__title">Chief Detective</h2>
         <p>This certifies that</p>
         <div class="certificate__name-line" aria-hidden="true"></div>
+        <p class="certificate__hint">Write your name on the line above.</p>
         <p>is an AI Detective who learned to check AI answers.</p>
+        <p class="certificate__score" id="certificate-score">Final score: 0</p>
+        <ul class="certificate__badge-list" id="certificate-badge-list" aria-label="Badges earned"></ul>
+        <p class="certificate__date-line">
+          Date:
+          <span class="certificate__date-blank" aria-hidden="true"></span>
+        </p>
+        <p class="certificate__hint">Write today's date on the line above.</p>
       </div>
-      <!-- Placed outside .certificate so it is excluded from the print block's
-           reveal scope (styles.css hides body *, then reveals .certificate and
-           its descendants only). Keeping this button as a sibling here means
-           it will not print alongside the certificate. -->
-      <button class="btn btn--secondary" id="certificate-close-btn" type="button">Back</button>
+      <!-- Placed outside .certificate so these controls are excluded from the
+           print block's reveal scope (styles.css hides body *, then reveals
+           .certificate and its descendants only). Keeping them as siblings
+           here means neither prints alongside the certificate. -->
+      <div class="certificate__actions">
+        <button class="btn btn--primary" id="certificate-print-btn" type="button">Print or save as PDF</button>
+        <button class="btn btn--secondary" id="certificate-close-btn" type="button">Back</button>
+      </div>
     </section>
 
   </main>

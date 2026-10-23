@@ -19,7 +19,7 @@ import {
   restoreRun,
 } from "./engine.js";
 import { SPOT_TOOLS, toolContent } from "./spot.js";
-import { play, mute, unmute } from "./audio.js";
+import { initAudio, playDing, playThud, playClick, setMuted, isMuted } from "./audio.js";
 import { focusElement, runSkippable } from "./a11y.js";
 import { earnedBadges } from "./badges.js";
 import { loadAggregate, saveAggregate } from "./storage.js";
@@ -51,6 +51,21 @@ export const COPY = {
   // active; it is not an error state.
   spotTipUnavailable: "That tip isn't available for this case right now.",
 };
+
+/**
+ * Capitalize only the first letter of a string, leaving the rest as-is.
+ * Used to display a badge's mistake-type key (stored lowercase, e.g.
+ * "extreme numbers") as the start of a readable list item rather than
+ * a lowercase word leading the line.
+ * @param {string} text
+ * @returns {string}
+ */
+function capitalizeFirst(text) {
+  if (typeof text !== "string" || text.length === 0) {
+    return text;
+  }
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
 
 /** @type {{ [key: string]: HTMLElement | null }} */
 let els = {};
@@ -87,17 +102,6 @@ let currentCandidates = [];
  * @type {object | null}
  */
 let pausedSnapshot = null;
-
-/**
- * Whether game audio is currently muted. Tracked here, not in
- * `audio.js`, because `audio.js` only exposes `mute()`/`unmute()`
- * setters and no getter for the current state; this module-level flag
- * is the single source of truth `toggleMute()` reads and flips, and
- * both mute controls' visible state is kept in sync with it
- * (Requirement 6.10).
- * @type {boolean}
- */
-let isMuted = false;
 
 /**
  * The full validated case pool from the most recent `loadCases` /
@@ -392,7 +396,15 @@ function handleSpotToolActivate(tool) {
   if (!tipEl) return;
 
   if (content.available) {
-    tipEl.textContent = `${content.tip} Try searching: ${content.searchPhrase}`;
+    // Each tool shows its own case-specific tip only. The "Pick your
+    // search words" tip is the one tool whose data already names the
+    // neutral search phrase itself (see data/cases.json's
+    // spot.pick_words), so it alone needs no extra line appended; the
+    // other three tools are not about searching and must not show a
+    // search phrase at all. An earlier version of this line appended
+    // "Try searching: {searchPhrase}" to every tool's tip, which made
+    // all four tools look like the same generic search prompt.
+    tipEl.textContent = content.tip;
   } else {
     tipEl.textContent = COPY.spotTipUnavailable;
   }
@@ -467,6 +479,7 @@ function handleCandidateSelect(token) {
 
   if (result === "correct") {
     hideFeedback();
+    playDing();
 
     if (button) {
       button.classList.add("is-correct");
@@ -516,6 +529,7 @@ function handleCandidateSelect(token) {
     button.disabled = true;
   }
 
+  playThud();
   showWrongFeedback();
 
   runSkippable(
@@ -597,7 +611,7 @@ function showEndScreen() {
     badges.forEach((badge) => {
       const item = document.createElement("li");
       item.className = "badge";
-      item.textContent = `${badge.type} — ${badge.label}`;
+      item.textContent = `${capitalizeFirst(badge.type)} — ${badge.label}`;
       list.appendChild(item);
     });
   }
@@ -658,16 +672,47 @@ function handleNextPack() {
 }
 
 /**
- * Download certificate control: show the print-styled certificate
- * screen. The certificate's blank name line is static markup in
- * index.html with no input control, so there is no name to pre-fill or
- * store here (Requirement 8.9). Moves focus to the certificate's title
- * so screen readers announce the new screen.
+ * Download certificate control: fill in the just-finished run's score
+ * and badges (reusing the same `earnedBadges` data as the End screen,
+ * no new storage), then show the print-styled certificate screen. The
+ * certificate's blank name and date lines are static markup in
+ * index.html with no input control, so there is no name or date to
+ * pre-fill or store here (Requirement 8.9). Moves focus to the
+ * certificate's title so screen readers announce the new screen.
  * @returns {void}
  */
 function handleCertificateOpen() {
+  const scoreEl = document.getElementById("certificate-score");
+  if (scoreEl && runState) {
+    scoreEl.textContent = `Final score: ${runState.score}`;
+  }
+
+  const badgeListEl = document.getElementById("certificate-badge-list");
+  if (badgeListEl) {
+    badgeListEl.replaceChildren();
+    if (runState) {
+      earnedBadges(runState).forEach((badge) => {
+        const item = document.createElement("li");
+        item.textContent = `${capitalizeFirst(badge.type)} — ${badge.label}`;
+        badgeListEl.appendChild(item);
+      });
+    }
+  }
+
   showScreen("screen-certificate");
   focusElement(document.querySelector(".certificate__title"));
+}
+
+/**
+ * Print or save as PDF control: trigger the browser's own print
+ * dialog. The print stylesheet (styles.css's @media print block) hides
+ * every button and every other screen, leaving only the certificate
+ * itself in the printed/saved output. No data is generated or stored;
+ * this only invokes the browser-native print flow.
+ * @returns {void}
+ */
+function handleCertificatePrint() {
+  window.print();
 }
 
 /**
@@ -701,10 +746,7 @@ function openPause() {
   const pauseHeading = document.getElementById("pause-heading");
   focusElement(pauseHeading);
 
-  const pauseMuteBtn = document.getElementById("pause-mute-btn");
-  if (pauseMuteBtn) {
-    pauseMuteBtn.textContent = isMuted ? "Unmute" : "Mute";
-  }
+  syncMuteControls();
 }
 
 /**
@@ -791,6 +833,38 @@ function handleHome() {
 }
 
 /**
+ * Sync both mute controls' visible state (icon, label, aria-pressed)
+ * with `audio.js`'s current `isMuted()` value, the single source of
+ * truth. Called after every mute toggle and whenever the pause menu
+ * opens, so both controls always agree (Requirement 6.10).
+ * @returns {void}
+ */
+function syncMuteControls() {
+  const muted = isMuted();
+
+  const muteBtn = document.getElementById("mute-btn");
+  if (muteBtn) {
+    muteBtn.setAttribute("aria-pressed", String(muted));
+    muteBtn.setAttribute("aria-label", muted ? "Unmute sound" : "Mute sound");
+    const onIcon = muteBtn.querySelector(".icon-on");
+    const offIcon = muteBtn.querySelector(".icon-off");
+    if (onIcon) onIcon.hidden = muted;
+    if (offIcon) offIcon.hidden = !muted;
+  }
+
+  const pauseMuteBtn = document.getElementById("pause-mute-btn");
+  if (pauseMuteBtn) {
+    pauseMuteBtn.setAttribute("aria-pressed", String(muted));
+    const onIcon = pauseMuteBtn.querySelector(".icon-on");
+    const offIcon = pauseMuteBtn.querySelector(".icon-off");
+    if (onIcon) onIcon.hidden = muted;
+    if (offIcon) offIcon.hidden = !muted;
+    const label = document.getElementById("pause-mute-label");
+    if (label) label.textContent = muted ? "Unmute" : "Mute";
+  }
+}
+
+/**
  * Toggle game audio mute state, shared by both the always-visible
  * case-screen mute control and the pause menu's Mute control
  * (Requirement 6.10). Keeps both controls' visible state in sync
@@ -798,26 +872,8 @@ function handleHome() {
  * @returns {void}
  */
 function toggleMute() {
-  if (isMuted) {
-    unmute();
-    isMuted = false;
-  } else {
-    mute();
-    isMuted = true;
-  }
-
-  const muteBtn = document.getElementById("mute-btn");
-  if (muteBtn) {
-    muteBtn.setAttribute("aria-pressed", String(isMuted));
-    muteBtn.setAttribute("aria-label", isMuted ? "Unmute music" : "Mute music");
-    // The visible glyph (span[aria-hidden]) is left as-is; swapping the
-    // icon itself to reflect mute state is left to a future task.
-  }
-
-  const pauseMuteBtn = document.getElementById("pause-mute-btn");
-  if (pauseMuteBtn) {
-    pauseMuteBtn.textContent = isMuted ? "Unmute" : "Mute";
-  }
+  setMuted(!isMuted());
+  syncMuteControls();
 }
 
 /**
@@ -847,20 +903,23 @@ export function initUI() {
   if (els.playBtn) {
     els.playBtn.addEventListener("click", () => {
       // Audio must only ever start after this user gesture
-      // (Requirements 6.1, 6.2, 6.3). Never call play() elsewhere.
-      play();
+      // (Requirements 6.1, 6.2, 6.3). Never call initAudio() elsewhere.
+      initAudio();
+      playClick();
       startLoadingFlow();
     });
   }
 
   if (els.retryBtn) {
     els.retryBtn.addEventListener("click", () => {
+      playClick();
       startLoadingFlow();
     });
   }
 
   if (els.unmaskContinueBtn) {
     els.unmaskContinueBtn.addEventListener("click", () => {
+      playClick();
       handleUnmaskContinue();
     });
   }
@@ -873,6 +932,7 @@ export function initUI() {
     const btn = document.querySelector(`#spot-panel .spot-tool[data-tool="${tool}"]`);
     if (btn) {
       btn.addEventListener("click", () => {
+        playClick();
         handleSpotToolActivate(tool);
       });
     }
@@ -881,6 +941,7 @@ export function initUI() {
   els.clueBtn = document.getElementById("clue-btn");
   if (els.clueBtn) {
     els.clueBtn.addEventListener("click", () => {
+      playClick();
       handleClueActivate();
     });
   }
@@ -889,6 +950,7 @@ export function initUI() {
   els.pauseBtn = document.getElementById("pause-btn");
   if (els.pauseBtn) {
     els.pauseBtn.addEventListener("click", () => {
+      playClick();
       openPause();
     });
   }
@@ -910,6 +972,7 @@ export function initUI() {
   els.resumeBtn = document.getElementById("resume-btn");
   if (els.resumeBtn) {
     els.resumeBtn.addEventListener("click", () => {
+      playClick();
       closePauseToResume();
     });
   }
@@ -917,6 +980,7 @@ export function initUI() {
   els.restartBtn = document.getElementById("restart-btn");
   if (els.restartBtn) {
     els.restartBtn.addEventListener("click", () => {
+      playClick();
       handleRestart();
     });
   }
@@ -924,6 +988,7 @@ export function initUI() {
   els.homeBtn = document.getElementById("home-btn");
   if (els.homeBtn) {
     els.homeBtn.addEventListener("click", () => {
+      playClick();
       handleHome();
     });
   }
@@ -932,6 +997,7 @@ export function initUI() {
   els.replayBtn = document.getElementById("replay-btn");
   if (els.replayBtn) {
     els.replayBtn.addEventListener("click", () => {
+      playClick();
       handleReplay();
     });
   }
@@ -939,6 +1005,7 @@ export function initUI() {
   els.nextPackBtn = document.getElementById("next-pack-btn");
   if (els.nextPackBtn) {
     els.nextPackBtn.addEventListener("click", () => {
+      playClick();
       handleNextPack();
     });
   }
@@ -946,14 +1013,29 @@ export function initUI() {
   els.certificateBtn = document.getElementById("certificate-btn");
   if (els.certificateBtn) {
     els.certificateBtn.addEventListener("click", () => {
+      playClick();
       handleCertificateOpen();
+    });
+  }
+
+  els.certificatePrintBtn = document.getElementById("certificate-print-btn");
+  if (els.certificatePrintBtn) {
+    els.certificatePrintBtn.addEventListener("click", () => {
+      playClick();
+      handleCertificatePrint();
     });
   }
 
   els.certificateCloseBtn = document.getElementById("certificate-close-btn");
   if (els.certificateCloseBtn) {
     els.certificateCloseBtn.addEventListener("click", () => {
+      playClick();
       handleCertificateClose();
     });
   }
+
+  // Set the initial visible state of both mute controls to match
+  // audio.js's actual (unmuted-by-default) state, rather than relying
+  // on index.html's static markup to happen to agree with it.
+  syncMuteControls();
 }
