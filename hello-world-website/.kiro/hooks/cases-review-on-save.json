@@ -1,0 +1,14 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Review cases.json on save",
+      "trigger": "PostFileSave",
+      "matcher": "data[\\\\/]cases\\.json$",
+      "action": {
+        "type": "agent",
+        "prompt": "The file data/cases.json was just saved. Review it against the AI Detective product steering rules (already in context):\n\n1. For every case entry, confirm it has: exactly one planted mistake (with a labeled mistake type from the allowed set: invented authority, extreme numbers, no specifics, overconfident tone), a `decoys` field, a one-line \"why\" explanation, and a clear citation (source name, link, date accessed) for every real fact/statistic/claim it references. Flag any fact that has no source, or any source that looks invented/unverifiable.\n\n2. If a case's mistake count, decoys, why, or sourcing is ambiguous or uncertain, set that case's `needsReview` field to `true` in data/cases.json (add the field if it's missing) and note briefly, in your report, why it's uncertain. Do not guess at facts or invent a source to fill a gap — flag it instead.\n\n3. Cross-reference every source cited across data/cases.json (and data/sources.json if it's used for shared sources) against docs/source-log.md. Update docs/source-log.md so every cited source appears there with source name, link, and date accessed, following the log's existing format. Don't duplicate entries that are already present.\n\n4. Report back any findings that violate the steering doc's:\n   - Privacy rules (no accounts/PII fields, no free-text kid input, no third-party tracking/analytics)\n   - Tone rules (no shaming language in feedback, Confident Bot stays funny/overconfident not evil, no \"AI is bad\" framing, roughly 6th-grade reading level, minimal on-screen text)\n   - Content rules (topics must stay low-stakes: animals, space, sports rules, food, school subjects; no politics, violence, health advice, or real private individuals)\n\nEnd with a short summary: what you checked, what you changed in data/cases.json and docs/source-log.md, and what still needs human review."
+      }
+    }
+  ]
+}

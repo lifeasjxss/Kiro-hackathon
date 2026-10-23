@@ -153,7 +153,7 @@
     "id": "tennis-love",
     "topic": "sports rules",
     "question": "Why is a zero score in tennis called love?",
-    "answer": "Q: Why is a zero score in tennis called love? A: Trust me, no specific historian or century backs up the real story behind this name. Q: What do we know for sure? A: In tennis, a score of zero is called love. Q: When does the word show up? A: The word love shows up before any points are scored. Q: Is there a popular guess for why? A: Some say it comes from playing just for love of the game.",
+    "answer": "Q: Why is a zero score in tennis called love? A: Trust me, no specific historian or century backs up the real story behind this name. Q: What do we know for sure? A: In tennis, a score of zero is called love. Q: When does the word show up? A: The word love shows up before any points are scored. Q: What comes after love in the score? A: After love, the next points are called 15, 30, and 40.",
     "mistake": {
       "phrase": "no specific historian or century backs up the real story behind this name",
       "type": "no specifics",
@@ -162,7 +162,7 @@
     "decoys": [
       "In tennis, a score of zero is called love",
       "The word love shows up before any points are scored",
-      "Some say it comes from playing just for love of the game"
+      "After love, the next points are called 15, 30, and 40"
     ],
     "spot": {
       "step_away": "Notice when a claim names no real historian or time period.",
