@@ -80,7 +80,14 @@ function clearList(listEl) {
 function renderEntries(listEl, entries) {
   for (const entry of entries) {
     const li = document.createElement("li");
-    li.textContent = `${entry.label} — ${entry.count}`;
+    // The label stays plain text; the count is wrapped in its own span
+    // so it alone can take the teacher-page number font (Chakra Petch)
+    // without affecting the label's font. textContent only, no innerHTML.
+    li.append(`${entry.label} — `);
+    const countEl = document.createElement("span");
+    countEl.className = "stat-number";
+    countEl.textContent = String(entry.count);
+    li.appendChild(countEl);
     listEl.appendChild(li);
   }
 }
