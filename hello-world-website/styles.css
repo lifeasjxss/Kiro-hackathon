@@ -39,6 +39,9 @@
    Confident Bot + case content:
      .bot-card                   the Confident Bot's speech/answer card
      .bot-card.is-unmasked       bot card after the mistake is found
+     .bot-card__answer           answer container, holds one .suspect-line per sentence
+     .suspect-line               one tappable answer sentence (a native <button>)
+     .suspect-line.is-suspect    a sentence the kid has marked as suspicious (visual aid only)
      .candidate-list             wrapper for the phrase-choice buttons
      .candidate-btn               one tappable phrase choice (a native <button>)
      .candidate-btn.is-correct   styling after a correct pick is revealed
@@ -52,13 +55,26 @@
      .feedback--wrong            "wrong" feedback variant
      .feedback__why              one-line neutral explanation text
 
-   SPOT toolkit:
+   Investigation tools (SPOT toolkit):
      .spot-panel                 container for the four SPOT tools
-     .spot-tool                  one tool control/button
+     .spot-tool                  one tool's card (container, not a button)
      .spot-tool.is-open          tool currently showing its tip
-     .spot-tool__tip             revealed tip + search phrase text
-     .clue-btn                   "Need a clue?" control
+     .spot-tool__toggle          the tool's own name/label button
+     .spot-tool__tip             revealed tip + "Add to evidence" wrapper
+     .spot-tool__tip-text        the tip/search phrase text itself
+     .spot-tool__pin-btn         "Add to evidence" control for this tool
+     .clue-btn                   "Ask the Chief for a clue." control
      .clue-btn.is-used           clue already charged for this case
+
+   Evidence board + evidence recap (in-memory only, never stored):
+     .evidence-board             strip below the answer holding pinned cards
+     .evidence-board__list       wrapper for the pinned evidence cards
+     .evidence-card               one pinned evidence card
+     .evidence-card__text        tool name + short tip text on a card
+     .evidence-card__remove      removes one card from the evidence board
+     .evidence-recap             "Your evidence" summary on the Unmask screen
+     .evidence-recap__list       wrapper for recap list items
+     .evidence-recap__empty      friendly one-line tip when no tool was used
 
    Pause menu:
      .pause-menu                 panel inside .screen--pause
@@ -658,7 +674,7 @@ button:focus:not(:focus-visible),
 }
 
 .bot-card h2,
-.bot-card p {
+.bot-card__answer {
   color: var(--paper-ink);
 }
 
@@ -678,10 +694,62 @@ button:focus:not(:focus-visible),
   font-size: 1.375rem;
 }
 
-/* AI answer text: Merriweather, per the font plan. */
-.bot-card p {
+/* AI answer text: Merriweather, per the font plan. .bot-card__answer now
+   holds one .suspect-line button per sentence (task: "mark suspicious
+   details") instead of plain text (there is no longer a <p> here), so
+   this rule is inherited by each button via `font: inherit` below. */
+.bot-card__answer {
+  font-family: var(--font-serif);
   font-size: 1.25rem;
   line-height: 1.6;
+}
+
+/* One tappable sentence of the AI's answer. A real <button> so it is
+   keyboard- and screen-reader-operable for free (Enter/Space activate
+   it; aria-pressed + aria-label announce its state). Marking a sentence
+   is a visual aid only: it never touches the candidate list, the
+   engine, or the score. Block-level and full-width (rather than an
+   inline run of text) so every sentence, short or long, clears the
+   48px minimum touch target. */
+.suspect-line {
+  display: block;
+  width: 100%;
+  min-height: 48px;
+  margin: 0 0 var(--space-1);
+  padding: var(--space-2);
+  text-align: left;
+  background: transparent;
+  border: 2px solid transparent;
+  border-radius: var(--radius-sm);
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.suspect-line:hover:not(.is-suspect) {
+  border-color: var(--paper-alt);
+}
+
+/* Marked as suspicious: a marker-highlight fill, a dashed border, AND a
+   leading glyph, so the state never depends on color alone. Built from
+   existing paper-family tokens only (--paper-alt, --wrong) rather than
+   a new color. */
+.suspect-line.is-suspect {
+  background: var(--paper-alt);
+  border-color: var(--wrong);
+  border-style: dashed;
+}
+
+.suspect-line.is-suspect::before {
+  content: "🔎 ";
+}
+
+/* The shared focus-ring color fails contrast on the light --paper card
+   (documented in section 1 above), so sentence buttons use the dark
+   ink color instead, which clears 10.60:1 against --paper. */
+.suspect-line:focus-visible,
+.suspect-line:focus {
+  outline-color: var(--paper-ink);
 }
 
 .candidate-list {
@@ -814,13 +882,24 @@ button:focus:not(:focus-visible),
    9. SPOT toolkit + clue button
    ========================================================================== */
 
+.spot-panel__heading {
+  font-size: 1.25rem;
+  margin: var(--space-4) 0 var(--space-2);
+}
+
 .spot-panel {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
-  margin: var(--space-4) 0;
+  margin: 0 0 var(--space-4);
 }
 
+/* .spot-tool is now a plain container (not a button) so it can hold the
+   tool's own toggle button alongside the tip text and its "Add to
+   evidence" button as separate, independently-focusable controls.
+   Nesting a <button> inside a <button> is invalid HTML and breaks
+   keyboard/screen-reader behavior, which is why this moved off the
+   button element it used to be. */
 .spot-tool {
   display: flex;
   flex-direction: column;
@@ -841,10 +920,39 @@ button:focus:not(:focus-visible),
   border-color: var(--btn-primary);
 }
 
+/* The tool's own name/label, e.g. "Step away". Keeps the Staatliches
+   look the old .spot-tool button had (inherited from the bare `button`
+   rule in section 3), just reset to behave like a plain, full-width,
+   left-aligned label rather than a filled button. */
+.spot-tool__toggle {
+  width: 100%;
+  min-height: 48px;
+  text-align: left;
+  background: transparent;
+  border: none;
+  padding: var(--space-1) 0;
+  margin: 0;
+  color: inherit;
+  cursor: pointer;
+}
+
 .spot-tool__tip {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+  width: 100%;
+}
+
+.spot-tool__tip-text {
   color: var(--text-muted);
   font-family: var(--font-notes);
   font-size: 1rem;
+  margin: 0;
+}
+
+.spot-tool__pin-btn {
+  align-self: flex-start;
 }
 
 .clue-btn.is-used {
@@ -1225,5 +1333,121 @@ button:focus:not(:focus-visible),
 
   @page {
     margin: 1.5cm;
+  }
+}
+
+/* ==========================================================================
+   15. Evidence board + evidence recap
+   ==========================================================================
+   Detective-work additions: pinned SPOT-tool tips (the evidence board, on
+   the case screen) and their "Your evidence" summary (the evidence recap,
+   on the Unmask screen). Both read from an in-memory list kept in
+   js/ui.js only; nothing here is stored, and no new color/font tokens
+   are introduced beyond what section 1 already defines.
+   ========================================================================== */
+
+.evidence-board {
+  margin: 0 0 var(--space-4);
+  padding: var(--space-3);
+  background: var(--board);
+  border: 2px solid var(--neutral);
+  border-radius: var(--radius-md);
+}
+
+.evidence-board__heading {
+  font-size: 1.125rem;
+  margin: 0 0 var(--space-2);
+}
+
+.evidence-board__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.evidence-card {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  max-width: 100%;
+  background: var(--panel);
+  border: 2px solid var(--btn-primary);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-3);
+}
+
+.evidence-card__text {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--text);
+  font-family: var(--font-notes);
+  font-size: 0.95rem;
+}
+
+.evidence-card__remove {
+  min-height: 48px;
+  min-width: 48px;
+  padding: var(--space-1) var(--space-2);
+  background: transparent;
+  border: 2px solid var(--neutral);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.evidence-card__remove:hover {
+  /* --wrong is reserved for borders/icons (section 1); --wrong-text is
+     the paired text color, same convention used by .candidate-btn.is-wrong
+     and .feedback--wrong above. */
+  border-color: var(--wrong);
+  color: var(--wrong-text);
+}
+
+.evidence-recap {
+  background: var(--panel);
+  border: 2px solid var(--neutral);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  margin: 0 0 var(--space-4);
+  text-align: left;
+}
+
+.evidence-recap__heading {
+  font-size: 1.25rem;
+  margin: 0 0 var(--space-2);
+}
+
+.evidence-recap__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.evidence-recap__list li {
+  font-family: var(--font-notes);
+  font-size: 1rem;
+  color: var(--text);
+}
+
+.evidence-recap__empty {
+  font-family: var(--font-notes);
+  font-size: 1rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+@media (min-width: 768px) {
+  .evidence-board__list {
+    gap: var(--space-3);
   }
 }

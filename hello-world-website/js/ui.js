@@ -50,6 +50,21 @@ export const COPY = {
   // current case (Requirement 4.5). Neutral, short, and keeps the case
   // active; it is not an error state.
   spotTipUnavailable: "That tip isn't available for this case right now.",
+  // Shown on the Unmask screen's evidence recap when no SPOT tool was
+  // used on the case just solved. Friendly, not a scold.
+  evidenceEmptyTip: "Evidence helps. Try pinning a tip next time you play.",
+};
+
+/** Readable label for each SPOT tool key, used on evidence cards and in
+ * the evidence recap's "Tools you used" line. Mirrors the button text
+ * already shown on each tool in the Investigation tools panel.
+ * @type {{ [key: string]: string }}
+ */
+const SPOT_TOOL_LABELS = {
+  step_away: "Step away",
+  pick_words: "Pick your search words",
+  open_sources: "Open other sources",
+  test_decide: "Test and decide",
 };
 
 /**
@@ -65,6 +80,45 @@ function capitalizeFirst(text) {
     return text;
   }
   return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
+/**
+ * Split an AI answer into sentence-sized chunks for the "mark as
+ * suspicious" feature: one tappable `.suspect-line` button per chunk.
+ * Splits only on whitespace that immediately follows a ".", "!", or
+ * "?", so a decimal number like "109.4" (no space after the period)
+ * is never split mid-number. Purely a display helper: it has no
+ * relationship to `mistake.phrase` and never reveals which chunk holds
+ * the planted mistake.
+ * @param {string} text
+ * @returns {string[]}
+ */
+function splitIntoSentences(text) {
+  if (typeof text !== "string") return [];
+  const trimmed = text.trim();
+  if (trimmed === "") return [];
+  return trimmed
+    .split(/(?<=[.!?])\s+/)
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
+}
+
+/**
+ * Shorten a SPOT tip to a short version suitable for an evidence card,
+ * cutting at the last whole word within `maxLen` characters rather
+ * than mid-word. Returns the tip unchanged if it already fits.
+ * @param {string} tip
+ * @param {number} [maxLen]
+ * @returns {string}
+ */
+function shortenTip(tip, maxLen = 60) {
+  if (typeof tip !== "string") return "";
+  const trimmed = tip.trim();
+  if (trimmed.length <= maxLen) return trimmed;
+  const cut = trimmed.slice(0, maxLen);
+  const lastSpace = cut.lastIndexOf(" ");
+  const base = lastSpace > 20 ? cut.slice(0, lastSpace) : cut;
+  return `${base}…`;
 }
 
 /** @type {{ [key: string]: HTMLElement | null }} */
@@ -121,6 +175,26 @@ let allValidCases = [];
  * @type {Array<object>}
  */
 let lastSelectedCases = [];
+
+/**
+ * Evidence cards pinned for the case currently on screen, in the order
+ * they were pinned: `{ tool, label, tip }[]`. Purely an in-memory UI
+ * aid (never written to storage.js or the engine's aggregate) and
+ * reset to an empty array for every new case by `renderCurrentCase()`.
+ * @type {Array<{ tool: string, label: string, tip: string }>}
+ */
+let evidencePins = [];
+
+/**
+ * SPOT tool keys opened at least once on the case currently on screen.
+ * Used only to build the Unmask screen's "Tools you used" recap line;
+ * reset to an empty Set for every new case by `renderCurrentCase()`.
+ * Not the same signal as `runState.aggregate.spotUsage`, which counts
+ * uses across the whole run for the teacher dashboard and is never
+ * touched by this module directly.
+ * @type {Set<string>}
+ */
+let spotToolsUsed = new Set();
 
 /**
  * Remove `.is-active` and set `aria-hidden="true"` on every `.screen`
@@ -286,12 +360,11 @@ function renderCurrentCase() {
   if (!currentCase) return;
 
   const questionEl = document.getElementById("case-question");
-  const answerEl = document.getElementById("case-answer");
   const counterEl = document.getElementById("question-counter");
   const scoreEl = document.getElementById("score-display");
 
   if (questionEl) questionEl.textContent = currentCase.question;
-  if (answerEl) answerEl.textContent = currentCase.answer;
+  renderAnswerSentences(currentCase);
   if (counterEl) {
     counterEl.textContent = `Case ${runState.index + 1} of ${runState.cases.length}`;
   }
@@ -312,14 +385,79 @@ function renderCurrentCase() {
     clueBtn.classList.remove("is-used");
   }
 
-  document.querySelectorAll("#spot-panel .spot-tool").forEach((btn) => {
-    btn.classList.remove("is-open");
-    const tipEl = btn.querySelector(".spot-tool__tip");
-    if (tipEl) {
-      tipEl.hidden = true;
-      tipEl.textContent = "";
+  document.querySelectorAll("#spot-panel .spot-tool").forEach((container) => {
+    container.classList.remove("is-open");
+    const tipEl = container.querySelector(".spot-tool__tip");
+    const tipTextEl = container.querySelector(".spot-tool__tip-text");
+    const pinBtn = container.querySelector(".spot-tool__pin-btn");
+    if (tipEl) tipEl.hidden = true;
+    if (tipTextEl) tipTextEl.textContent = "";
+    if (pinBtn) {
+      pinBtn.hidden = false;
+      pinBtn.disabled = false;
+      pinBtn.textContent = "Add to evidence";
     }
   });
+
+  // Fresh case: the evidence board and the per-case "tools used"
+  // tracking are both in-memory UI aids with no link to the engine's
+  // state, so they are reset here directly rather than through a
+  // run-state transition (Requirements: evidence is pinned per case
+  // and never carries over).
+  evidencePins = [];
+  spotToolsUsed = new Set();
+  renderEvidenceBoard();
+}
+
+/**
+ * Render the AI's answer as one `.suspect-line` button per sentence
+ * into `#case-answer`, replacing any previous case's buttons. Each
+ * button toggles a "mark as suspicious" highlight on click, Enter, or
+ * Space (native `<button>` behavior). Marking is a visual aid only:
+ * it is never read by the candidate list, the engine, or the score,
+ * and it resets automatically every time this function rebuilds the
+ * button list for a new case.
+ * @param {object} currentCase
+ * @returns {void}
+ */
+function renderAnswerSentences(currentCase) {
+  const answerEl = document.getElementById("case-answer");
+  if (!answerEl) return;
+
+  answerEl.replaceChildren();
+
+  splitIntoSentences(currentCase.answer).forEach((sentence) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "suspect-line";
+    btn.textContent = sentence;
+    btn.setAttribute("aria-pressed", "false");
+    btn.setAttribute("aria-label", `Mark as suspicious: ${sentence}`);
+    btn.addEventListener("click", () => {
+      playClick();
+      toggleSuspectLine(btn, sentence);
+    });
+    answerEl.appendChild(btn);
+  });
+}
+
+/**
+ * Toggle one answer sentence's "marked as suspicious" highlight.
+ * Updates the visible highlight class, `aria-pressed`, and the
+ * `aria-label` so screen readers announce the current state using the
+ * same "Mark as suspicious" / "Marked as suspicious" wording either
+ * way (Requirement: clear label on the control).
+ * @param {HTMLButtonElement} btn
+ * @param {string} sentence
+ * @returns {void}
+ */
+function toggleSuspectLine(btn, sentence) {
+  const marked = btn.classList.toggle("is-suspect");
+  btn.setAttribute("aria-pressed", String(marked));
+  btn.setAttribute(
+    "aria-label",
+    `${marked ? "Marked" : "Mark"} as suspicious: ${sentence}`
+  );
 }
 
 /**
@@ -386,14 +524,25 @@ function handleSpotToolActivate(tool) {
   runState = useSpotTool(runState, tool);
   saveAggregate(runState.aggregate);
 
+  // Tracked for the Unmask screen's evidence recap only (Requirement:
+  // "which SPOT tools were used"); not the same counter as
+  // `runState.aggregate.spotUsage` above, and never written to storage.
+  spotToolsUsed.add(tool);
+
   const currentCase = runState.cases[runState.index];
   const content = toolContent(currentCase, tool);
 
-  const button = document.querySelector(
+  const container = document.querySelector(
     `#spot-panel .spot-tool[data-tool="${tool}"]`
   );
-  const tipEl = button ? button.querySelector(".spot-tool__tip") : null;
-  if (!tipEl) return;
+  const tipEl = container ? container.querySelector(".spot-tool__tip") : null;
+  const tipTextEl = container
+    ? container.querySelector(".spot-tool__tip-text")
+    : null;
+  const pinBtn = container
+    ? container.querySelector(".spot-tool__pin-btn")
+    : null;
+  if (!tipEl || !tipTextEl) return;
 
   if (content.available) {
     // Each tool shows its own case-specific tip only. The "Pick your
@@ -404,15 +553,119 @@ function handleSpotToolActivate(tool) {
     // search phrase at all. An earlier version of this line appended
     // "Try searching: {searchPhrase}" to every tool's tip, which made
     // all four tools look like the same generic search prompt.
-    tipEl.textContent = content.tip;
+    tipTextEl.textContent = content.tip;
+    if (pinBtn) pinBtn.hidden = false;
   } else {
-    tipEl.textContent = COPY.spotTipUnavailable;
+    tipTextEl.textContent = COPY.spotTipUnavailable;
+    // No real tip to pin, so hide the pin control rather than letting
+    // the kid pin a "not available" message as evidence.
+    if (pinBtn) pinBtn.hidden = true;
   }
 
   tipEl.hidden = false;
-  if (button) {
-    button.classList.add("is-open");
+  if (container) {
+    container.classList.add("is-open");
   }
+}
+
+/**
+ * Handle a SPOT tool's "Add to evidence" control: pin a small evidence
+ * card (the tool's label plus a shortened version of its tip) to the
+ * in-memory evidence board for the case currently on screen. Each tool
+ * can be pinned once at a time; pressing the control again while its
+ * card is already pinned is a no-op until the card is removed. Never
+ * touches the engine's run state, the score, or storage.js.
+ * @param {string} tool
+ * @returns {void}
+ */
+function handlePinEvidence(tool) {
+  if (!runState || !runState.cases[runState.index]) return;
+
+  const currentCase = runState.cases[runState.index];
+  const content = toolContent(currentCase, tool);
+  if (!content.available) return;
+  if (evidencePins.some((pin) => pin.tool === tool)) return;
+
+  evidencePins.push({
+    tool,
+    label: SPOT_TOOL_LABELS[tool] || tool,
+    tip: shortenTip(content.tip),
+  });
+  renderEvidenceBoard();
+
+  const pinBtn = document.querySelector(
+    `#spot-panel .spot-tool__pin-btn[data-tool="${tool}"]`
+  );
+  if (pinBtn) {
+    pinBtn.disabled = true;
+    pinBtn.textContent = "Added to evidence";
+  }
+}
+
+/**
+ * Remove one pinned evidence card by its tool key, and re-enable that
+ * tool's "Add to evidence" control so it can be pinned again.
+ * @param {string} tool
+ * @returns {void}
+ */
+function handleRemoveEvidence(tool) {
+  evidencePins = evidencePins.filter((pin) => pin.tool !== tool);
+  renderEvidenceBoard();
+
+  const pinBtn = document.querySelector(
+    `#spot-panel .spot-tool__pin-btn[data-tool="${tool}"]`
+  );
+  if (pinBtn) {
+    pinBtn.disabled = false;
+    pinBtn.textContent = "Add to evidence";
+  }
+}
+
+/**
+ * Render the evidence board strip from `evidencePins`: one card per
+ * pinned tool, each with a Remove control. Hides the whole board when
+ * there is nothing pinned, so it never shows up as an empty strip.
+ * @returns {void}
+ */
+function renderEvidenceBoard() {
+  const board = document.getElementById("evidence-board");
+  const list = document.getElementById("evidence-board-list");
+  if (!board || !list) return;
+
+  list.replaceChildren();
+
+  if (evidencePins.length === 0) {
+    board.hidden = true;
+    return;
+  }
+
+  board.hidden = false;
+
+  evidencePins.forEach((pin) => {
+    const item = document.createElement("li");
+    item.className = "evidence-card";
+
+    const text = document.createElement("span");
+    text.className = "evidence-card__text";
+    text.textContent = `${pin.label}: ${pin.tip}`;
+
+    const removeBtn = document.createElement("button");
+    removeBtn.type = "button";
+    removeBtn.className = "evidence-card__remove";
+    removeBtn.textContent = "Remove";
+    removeBtn.setAttribute(
+      "aria-label",
+      `Remove ${pin.label} from the evidence board`
+    );
+    removeBtn.addEventListener("click", () => {
+      playClick();
+      handleRemoveEvidence(pin.tool);
+    });
+
+    item.appendChild(text);
+    item.appendChild(removeBtn);
+    list.appendChild(item);
+  });
 }
 
 /**
@@ -553,6 +806,8 @@ function handleCandidateSelect(token) {
 function showUnmask(solvedCase) {
   showScreen("screen-unmask");
 
+  renderEvidenceRecap();
+
   const typeEl = document.getElementById("unmask-type");
   const whyEl = document.getElementById("unmask-why");
 
@@ -563,7 +818,48 @@ function showUnmask(solvedCase) {
     whyEl.textContent = solvedCase.mistake.why;
   }
 
-  focusElement(typeEl);
+  // Focus the evidence recap first, so screen readers announce the
+  // kid's own detective work before the mistake type/why explanation
+  // that follows it on screen.
+  focusElement(document.getElementById("evidence-recap-heading"));
+}
+
+/**
+ * Render the Unmask screen's "Your evidence" recap from the case just
+ * solved: which SPOT tools were used, plus any evidence cards pinned
+ * while working the case. If no SPOT tool was used at all, shows a
+ * friendly one-line tip instead (Requirement: "if none were used").
+ * Reads only the in-memory `evidencePins`/`spotToolsUsed` state; never
+ * touches the engine, the score, or storage.js.
+ * @returns {void}
+ */
+function renderEvidenceRecap() {
+  const list = document.getElementById("evidence-recap-list");
+  const emptyEl = document.getElementById("evidence-recap-empty");
+  if (!list || !emptyEl) return;
+
+  list.replaceChildren();
+
+  if (spotToolsUsed.size === 0) {
+    emptyEl.hidden = false;
+    emptyEl.textContent = COPY.evidenceEmptyTip;
+    return;
+  }
+
+  emptyEl.hidden = true;
+
+  const toolsItem = document.createElement("li");
+  const toolNames = Array.from(spotToolsUsed)
+    .map((tool) => SPOT_TOOL_LABELS[tool] || tool)
+    .join(", ");
+  toolsItem.textContent = `Tools you used: ${toolNames}`;
+  list.appendChild(toolsItem);
+
+  evidencePins.forEach((pin) => {
+    const item = document.createElement("li");
+    item.textContent = `${pin.label}: ${pin.tip}`;
+    list.appendChild(item);
+  });
 }
 
 /**
@@ -924,16 +1220,29 @@ export function initUI() {
     });
   }
 
-  // SPOT toolkit: four static buttons, one per SPOT_TOOLS key. Native
-  // <button> already handles Enter/Space activation, so a single click
-  // listener per tool satisfies "keyboard-operable" with no extra
+  // Investigation tools (SPOT toolkit): four static tool cards, each
+  // with its own toggle button and "Add to evidence" button. Native
+  // <button> already handles Enter/Space activation, so one click
+  // listener per control satisfies "keyboard-operable" with no extra
   // keydown wiring (Requirement 4.1).
   SPOT_TOOLS.forEach((tool) => {
-    const btn = document.querySelector(`#spot-panel .spot-tool[data-tool="${tool}"]`);
-    if (btn) {
-      btn.addEventListener("click", () => {
+    const toggleBtn = document.querySelector(
+      `#spot-panel .spot-tool__toggle[data-tool="${tool}"]`
+    );
+    if (toggleBtn) {
+      toggleBtn.addEventListener("click", () => {
         playClick();
         handleSpotToolActivate(tool);
+      });
+    }
+
+    const pinBtn = document.querySelector(
+      `#spot-panel .spot-tool__pin-btn[data-tool="${tool}"]`
+    );
+    if (pinBtn) {
+      pinBtn.addEventListener("click", () => {
+        playClick();
+        handlePinEvidence(tool);
       });
     }
   });

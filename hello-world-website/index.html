@@ -61,33 +61,65 @@
 
       <div class="bot-card" id="bot-card">
         <h2 id="case-question">Loading question...</h2>
-        <p id="case-answer">The Confident Bot's answer will show up here.</p>
+        <!-- Sentence buttons are rendered by js/ui.js; each one can be
+             tapped to toggle a "mark as suspicious" highlight. This is a
+             visual aid only and never affects the answer or the score. -->
+        <div class="bot-card__answer" id="case-answer">The Confident Bot's answer will show up here.</div>
       </div>
+
+      <!-- Evidence board: pinned SPOT-tool tips the kid chose to keep.
+           Populated by js/ui.js, kept in memory only, and cleared for
+           every new case. Hidden until at least one card is pinned. -->
+      <section class="evidence-board" id="evidence-board" aria-live="polite" hidden>
+        <h3 class="evidence-board__heading" id="evidence-board-heading">Evidence board</h3>
+        <ul class="evidence-board__list" id="evidence-board-list" aria-label="Pinned evidence"></ul>
+      </section>
 
       <!-- Candidate buttons are rendered by js/ui.js -->
       <ul class="candidate-list" id="candidate-list" aria-label="Pick the planted mistake">
       </ul>
 
-      <div class="spot-panel" id="spot-panel">
-        <button class="spot-tool" type="button" data-tool="step_away">
-          Step away
-          <span class="spot-tool__tip" hidden></span>
-        </button>
-        <button class="spot-tool" type="button" data-tool="pick_words">
-          Pick your search words
-          <span class="spot-tool__tip" hidden></span>
-        </button>
-        <button class="spot-tool" type="button" data-tool="open_sources">
-          Open other sources
-          <span class="spot-tool__tip" hidden></span>
-        </button>
-        <button class="spot-tool" type="button" data-tool="test_decide">
-          Test and decide
-          <span class="spot-tool__tip" hidden></span>
-        </button>
+      <h3 class="spot-panel__heading" id="spot-panel-heading">Investigation tools</h3>
+      <div class="spot-panel" id="spot-panel" aria-labelledby="spot-panel-heading">
+        <div class="spot-tool" data-tool="step_away">
+          <button class="spot-tool__toggle" type="button" data-tool="step_away">
+            Step away
+          </button>
+          <div class="spot-tool__tip" hidden>
+            <p class="spot-tool__tip-text"></p>
+            <button class="spot-tool__pin-btn btn btn--secondary" type="button" data-tool="step_away">Add to evidence</button>
+          </div>
+        </div>
+        <div class="spot-tool" data-tool="pick_words">
+          <button class="spot-tool__toggle" type="button" data-tool="pick_words">
+            Pick your search words
+          </button>
+          <div class="spot-tool__tip" hidden>
+            <p class="spot-tool__tip-text"></p>
+            <button class="spot-tool__pin-btn btn btn--secondary" type="button" data-tool="pick_words">Add to evidence</button>
+          </div>
+        </div>
+        <div class="spot-tool" data-tool="open_sources">
+          <button class="spot-tool__toggle" type="button" data-tool="open_sources">
+            Open other sources
+          </button>
+          <div class="spot-tool__tip" hidden>
+            <p class="spot-tool__tip-text"></p>
+            <button class="spot-tool__pin-btn btn btn--secondary" type="button" data-tool="open_sources">Add to evidence</button>
+          </div>
+        </div>
+        <div class="spot-tool" data-tool="test_decide">
+          <button class="spot-tool__toggle" type="button" data-tool="test_decide">
+            Test and decide
+          </button>
+          <div class="spot-tool__tip" hidden>
+            <p class="spot-tool__tip-text"></p>
+            <button class="spot-tool__pin-btn btn btn--secondary" type="button" data-tool="test_decide">Add to evidence</button>
+          </div>
+        </div>
       </div>
 
-      <button class="btn btn--secondary clue-btn" id="clue-btn" type="button">Need a clue?</button>
+      <button class="btn btn--secondary clue-btn" id="clue-btn" type="button">Ask the Chief for a clue.</button>
 
       <div class="feedback" id="feedback-region" role="status" aria-live="polite" hidden>
         <span class="feedback__why" id="feedback-why"></span>
@@ -100,6 +132,17 @@
          ============================================================ -->
     <section class="screen screen--unmask" id="screen-unmask" aria-hidden="true">
       <h2>Unmasked!</h2>
+      <!-- Evidence recap: a summary of the pinned evidence cards and SPOT
+           tools used on the case just solved, built from in-memory state
+           kept in js/ui.js only (never stored). Shown before the mistake
+           type and why, so the kid sees their own detective work first. -->
+      <div class="evidence-recap" id="evidence-recap">
+        <h3 class="evidence-recap__heading" id="evidence-recap-heading">Your evidence</h3>
+        <ul class="evidence-recap__list" id="evidence-recap-list"></ul>
+        <p class="evidence-recap__empty" id="evidence-recap-empty" hidden>
+          Evidence helps. Try pinning a tip next time you play.
+        </p>
+      </div>
       <p class="case-note" id="unmask-type">Mistake type: ...</p>
       <p class="case-note" id="unmask-why">Why: ...</p>
       <button class="btn btn--primary" id="unmask-continue-btn" type="button">Continue</button>
