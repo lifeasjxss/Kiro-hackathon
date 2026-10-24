@@ -1262,131 +1262,245 @@ function handleHome() {
 }
 
 /**
+ * Whether a tutorial step's target element is safe to coach-mark right
+ * now: actually in the document, and rendered with a real, non-zero
+ * box (not `hidden`, not `display:none`, not collapsed by some
+ * ancestor). `getClientRects()` is empty for anything not in the
+ * render tree at all (the standard "is this actually painted" check),
+ * which catches `hidden`/`display:none` targets that `getBoundingClientRect`
+ * alone would not (it still returns a - all-zero - rect for those).
+ * Used to decide whether a step should be shown or skipped, so a
+ * missing/hidden target can never crash the tutorial or leave its
+ * highlight and callout stranded off-screen.
+ * @param {Element | null} target
+ * @returns {boolean}
+ */
+function isTutorialTargetUsable(target) {
+  if (!target || !(target instanceof Element) || !document.contains(target)) {
+    return false;
+  }
+  if (target.getClientRects().length === 0) {
+    return false;
+  }
+  const rect = target.getBoundingClientRect();
+  return rect.width > 0 && rect.height > 0;
+}
+
+/**
+ * Search `TUTORIAL_STEPS` for the nearest index, starting at
+ * `startIndex` and moving by `direction` (1 forward, -1 backward),
+ * whose target element is currently usable (see
+ * `isTutorialTargetUsable`). Returns -1 if nothing in that direction
+ * qualifies, meaning the tutorial has nothing left to show that way.
+ * @param {number} startIndex
+ * @param {1 | -1} direction
+ * @returns {number}
+ */
+function findUsableStepIndex(startIndex, direction) {
+  for (let idx = startIndex; idx >= 0 && idx < TUTORIAL_STEPS.length; idx += direction) {
+    const step = TUTORIAL_STEPS[idx];
+    const target = step ? document.getElementById(step.targetId) : null;
+    if (isTutorialTargetUsable(target)) return idx;
+  }
+  return -1;
+}
+
+/**
  * Position the tutorial's highlight box and callout against the
  * current step's target element, using `tutorial.js`'s pure
- * `computeCalloutPosition` for the actual math. No-ops (closes the
- * tutorial) if the target element cannot be found or has no size,
- * which should only happen if a step's `targetId` does not match any
- * real element on the current screen.
- * @returns {void}
+ * `computeCalloutPosition` for the actual math. On short viewports
+ * (phones, Chromebooks) a later step's target (the SPOT panel, the
+ * candidate list) can sit below the fold, so the target is scrolled
+ * fully into view first; otherwise the highlight and the callout's own
+ * Back/Skip/Next buttons would be positioned off-screen behind the
+ * dimming scrim, with nothing left for the kid to see or click.
+ * Returns false (never throws) if the target is missing/hidden or
+ * anything else goes wrong, so the caller can skip the step instead of
+ * showing a broken one.
+ * @returns {boolean}
  */
 function positionTutorialStep() {
-  const step = TUTORIAL_STEPS[tutorialStepIndex];
-  const target = step ? document.getElementById(step.targetId) : null;
-  const highlight = document.getElementById("tutorial-highlight");
-  const callout = document.getElementById("tutorial-callout");
-  if (!step || !target || !highlight || !callout) {
-    closeTutorial();
-    return;
+  try {
+    const step = TUTORIAL_STEPS[tutorialStepIndex];
+    const highlight = document.getElementById("tutorial-highlight");
+    const callout = document.getElementById("tutorial-callout");
+    const target = step ? document.getElementById(step.targetId) : null;
+
+    if (!step || !highlight || !callout || !isTutorialTargetUsable(target)) {
+      return false;
+    }
+
+    const viewport = { width: window.innerWidth, height: window.innerHeight };
+    let targetRect = target.getBoundingClientRect();
+    const fullyVisible =
+      targetRect.top >= 0 &&
+      targetRect.left >= 0 &&
+      targetRect.bottom <= viewport.height &&
+      targetRect.right <= viewport.width;
+    if (!fullyVisible) {
+      target.scrollIntoView({ block: "center", inline: "nearest", behavior: "auto" });
+      targetRect = target.getBoundingClientRect();
+    }
+
+    const pad = 6;
+    highlight.style.top = `${targetRect.top - pad}px`;
+    highlight.style.left = `${targetRect.left - pad}px`;
+    highlight.style.width = `${targetRect.width + pad * 2}px`;
+    highlight.style.height = `${targetRect.height + pad * 2}px`;
+
+    const calloutRect = callout.getBoundingClientRect();
+    const position = computeCalloutPosition(
+      targetRect,
+      { width: calloutRect.width, height: calloutRect.height },
+      viewport
+    );
+
+    callout.style.top = `${position.top}px`;
+    callout.style.left = `${position.left}px`;
+    callout.style.setProperty("--arrow-offset", `${position.arrowOffset}px`);
+    callout.classList.remove(
+      "tutorial-overlay__callout--arrow-top",
+      "tutorial-overlay__callout--arrow-bottom",
+      "tutorial-overlay__callout--arrow-none"
+    );
+    const arrowClass =
+      position.placement === "below"
+        ? "tutorial-overlay__callout--arrow-top"
+        : position.placement === "above"
+        ? "tutorial-overlay__callout--arrow-bottom"
+        : "tutorial-overlay__callout--arrow-none";
+    callout.classList.add(arrowClass);
+    return true;
+  } catch {
+    // Position math must never throw and leave the overlay stuck;
+    // treat any unexpected failure the same as "target not usable".
+    return false;
   }
-
-  const targetRect = target.getBoundingClientRect();
-  if (targetRect.width === 0 && targetRect.height === 0) {
-    closeTutorial();
-    return;
-  }
-
-  const pad = 6;
-  highlight.style.top = `${targetRect.top - pad}px`;
-  highlight.style.left = `${targetRect.left - pad}px`;
-  highlight.style.width = `${targetRect.width + pad * 2}px`;
-  highlight.style.height = `${targetRect.height + pad * 2}px`;
-
-  const calloutRect = callout.getBoundingClientRect();
-  const viewport = { width: window.innerWidth, height: window.innerHeight };
-  const position = computeCalloutPosition(
-    targetRect,
-    { width: calloutRect.width, height: calloutRect.height },
-    viewport
-  );
-
-  callout.style.top = `${position.top}px`;
-  callout.style.left = `${position.left}px`;
-  callout.style.setProperty("--arrow-offset", `${position.arrowOffset}px`);
-  callout.classList.remove(
-    "tutorial-overlay__callout--arrow-top",
-    "tutorial-overlay__callout--arrow-bottom",
-    "tutorial-overlay__callout--arrow-none"
-  );
-  const arrowClass =
-    position.placement === "below"
-      ? "tutorial-overlay__callout--arrow-top"
-      : position.placement === "above"
-      ? "tutorial-overlay__callout--arrow-bottom"
-      : "tutorial-overlay__callout--arrow-none";
-  callout.classList.add(arrowClass);
 }
 
 /**
- * Render the tutorial overlay's current step: progress text, heading,
- * body copy, Back/Skip/Next button states (Next becomes "Got it!" on
- * the last step, Back is disabled on the first), then reposition the
- * highlight and callout and move focus to the heading so screen
- * readers announce the new step. Never called on a timer; only from
- * explicit Back/Next clicks and `openTutorial()` itself.
+ * Render the tutorial overlay starting the search for a step to show
+ * at `startIndex` and moving by `direction` (1 forward, -1 backward)
+ * until a step with a usable target is found (see
+ * `findUsableStepIndex`): progress text, heading, body copy,
+ * Back/Skip/Next button states (Next becomes "Got it!" when no later
+ * step has a usable target, Back is disabled when no earlier step
+ * does), then reposition the highlight and callout and move focus to
+ * the heading so screen readers announce the new step. If nothing in
+ * that direction has a usable target (every remaining target is
+ * missing/hidden, or positioning otherwise fails), the tutorial ends
+ * cleanly via `closeTutorial()` instead of showing a broken step.
+ * Never called on a timer; only from explicit Back/Next clicks,
+ * `openTutorial()` itself, or the resize handler.
+ * @param {number} [startIndex]
+ * @param {1 | -1} [direction]
  * @returns {void}
  */
-function renderTutorialStep() {
-  const step = TUTORIAL_STEPS[tutorialStepIndex];
-  if (!step) return;
+function renderTutorialStep(startIndex = tutorialStepIndex, direction = 1) {
+  try {
+    const foundIndex = findUsableStepIndex(startIndex, direction);
+    if (foundIndex === -1) {
+      closeTutorial();
+      return;
+    }
+    tutorialStepIndex = foundIndex;
+    const step = TUTORIAL_STEPS[tutorialStepIndex];
 
-  const progressEl = document.getElementById("tutorial-progress");
-  const headingEl = document.getElementById("tutorial-heading");
-  const bodyEl = document.getElementById("tutorial-body");
-  const backBtn = document.getElementById("tutorial-back-btn");
-  const nextBtn = document.getElementById("tutorial-next-btn");
+    const progressEl = document.getElementById("tutorial-progress");
+    const headingEl = document.getElementById("tutorial-heading");
+    const bodyEl = document.getElementById("tutorial-body");
+    const backBtn = document.getElementById("tutorial-back-btn");
+    const nextBtn = document.getElementById("tutorial-next-btn");
 
-  if (progressEl) {
-    progressEl.textContent = `Step ${tutorialStepIndex + 1} of ${TUTORIAL_STEPS.length}`;
+    if (progressEl) {
+      progressEl.textContent = `Step ${tutorialStepIndex + 1} of ${TUTORIAL_STEPS.length}`;
+    }
+    if (headingEl) headingEl.textContent = step.heading;
+    if (bodyEl) bodyEl.textContent = step.body;
+
+    const hasUsableBack = findUsableStepIndex(tutorialStepIndex - 1, -1) !== -1;
+    const hasUsableNext = findUsableStepIndex(tutorialStepIndex + 1, 1) !== -1;
+    if (backBtn) backBtn.disabled = !hasUsableBack;
+    if (nextBtn) nextBtn.textContent = hasUsableNext ? "Next" : "Got it!";
+
+    if (!positionTutorialStep()) {
+      // The target was usable a moment ago (findUsableStepIndex just
+      // checked it) but positioning still failed: end the tutorial
+      // cleanly rather than leave a half-rendered step on screen.
+      closeTutorial();
+      return;
+    }
+
+    focusElement(headingEl);
+  } catch {
+    // Any unexpected error while rendering a step must never leave the
+    // modal scrim stuck on screen with no way out.
+    closeTutorial();
   }
-  if (headingEl) headingEl.textContent = step.heading;
-  if (bodyEl) bodyEl.textContent = step.body;
-  if (backBtn) backBtn.disabled = tutorialStepIndex === 0;
-  if (nextBtn) {
-    nextBtn.textContent = tutorialStepIndex === TUTORIAL_STEPS.length - 1 ? "Got it!" : "Next";
-  }
-
-  positionTutorialStep();
-  focusElement(headingEl);
 }
 
 /**
- * Open the tutorial overlay at step 1. Safe to call any time the case
- * screen's real elements are on screen: automatically once per run
- * (right after a run is created) and any number of times afterward
- * through the Start screen's or pause menu's "How to play" controls.
- * Remembers the currently-focused element so it can be restored when
- * the tutorial closes, and keeps the overlay's highlight/callout in
- * sync with the viewport via a resize listener while it is open.
+ * Open the tutorial overlay at the first step with a usable target
+ * (normally step 1). Safe to call any time the case screen's real
+ * elements are on screen: automatically once per run (right after a
+ * run is created) and any number of times afterward through the Start
+ * screen's or pause menu's "How to play" controls. Remembers the
+ * currently-focused element so it can be restored when the tutorial
+ * closes, and keeps the overlay's highlight/callout in sync with the
+ * viewport via a resize listener while it is open.
  * @returns {void}
  */
 function openTutorial() {
   const overlay = document.getElementById("tutorial-overlay");
   if (!overlay) return;
 
-  tutorialReturnFocusEl =
-    document.activeElement instanceof HTMLElement ? document.activeElement : null;
+  try {
+    tutorialReturnFocusEl =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null;
 
-  tutorialActive = true;
-  tutorialStepIndex = 0;
-  overlay.hidden = false;
+    tutorialActive = true;
+    tutorialStepIndex = 0;
+    overlay.hidden = false;
 
-  renderTutorialStep();
+    renderTutorialStep(0, 1);
+    // renderTutorialStep closes the tutorial itself if no step has a
+    // usable target; don't wire up a resize listener for a tutorial
+    // that already ended.
+    if (!tutorialActive) return;
 
-  tutorialResizeHandler = () => positionTutorialStep();
-  window.addEventListener("resize", tutorialResizeHandler);
+    tutorialResizeHandler = () => {
+      try {
+        if (!positionTutorialStep()) {
+          renderTutorialStep(tutorialStepIndex, 1);
+        }
+      } catch {
+        closeTutorial();
+      }
+    };
+    window.addEventListener("resize", tutorialResizeHandler);
+  } catch {
+    closeTutorial();
+  }
 }
 
 /**
- * Close the tutorial overlay (via Skip tutorial, Got it!, or Escape)
- * and return focus to wherever it was before the tutorial opened, or
- * a safe fallback if that element is gone. Never advances or resolves
- * any case state; the tutorial has no effect on scoring or progress.
+ * Close the tutorial overlay (via Skip tutorial, Got it!, Escape, or
+ * any internal error) and return focus to wherever it was before the
+ * tutorial opened, or a safe fallback if that element is gone. Always
+ * fully hides the overlay, clears the resize listener, and restores
+ * focus, even if something above went wrong, so the case screen's
+ * focus, scrolling, and clicks are never left stuck behind a dimming
+ * scrim. Never advances or resolves any case state; the tutorial has
+ * no effect on scoring or progress.
  * @returns {void}
  */
 function closeTutorial() {
-  const overlay = document.getElementById("tutorial-overlay");
-  if (overlay) overlay.hidden = true;
+  try {
+    const overlay = document.getElementById("tutorial-overlay");
+    if (overlay) overlay.hidden = true;
+  } catch {
+    // Swallow: closing must never throw and leave the overlay stuck.
+  }
 
   tutorialActive = false;
 
@@ -1405,43 +1519,57 @@ function closeTutorial() {
 }
 
 /**
- * Next control: advance one step, or close the tutorial (as "Got
- * it!") from the last step. Only ever called from a real button
- * click, never a timer, so the tutorial never advances on its own.
+ * Next control: advance to the next step with a usable target, or
+ * close the tutorial (as "Got it!") when no later step has one. Only
+ * ever called from a real button click, never a timer, so the
+ * tutorial never advances on its own.
  * @returns {void}
  */
 function handleTutorialNext() {
-  if (tutorialStepIndex >= TUTORIAL_STEPS.length - 1) {
+  try {
+    const hasUsableNext = findUsableStepIndex(tutorialStepIndex + 1, 1) !== -1;
+    if (!hasUsableNext) {
+      closeTutorial();
+      return;
+    }
+    renderTutorialStep(tutorialStepIndex + 1, 1);
+  } catch {
     closeTutorial();
-    return;
   }
-  tutorialStepIndex += 1;
-  renderTutorialStep();
 }
 
 /**
- * Back control: step back one, or no-op on the first step (the
- * button is disabled there, but this guard keeps the function safe
- * to call directly too).
+ * Back control: step back to the nearest earlier step with a usable
+ * target, or no-op when none exists (the button is disabled then, but
+ * this guard keeps the function safe to call directly too).
  * @returns {void}
  */
 function handleTutorialBack() {
-  if (tutorialStepIndex <= 0) return;
-  tutorialStepIndex -= 1;
-  renderTutorialStep();
+  try {
+    const hasUsableBack = findUsableStepIndex(tutorialStepIndex - 1, -1) !== -1;
+    if (!hasUsableBack) return;
+    renderTutorialStep(tutorialStepIndex - 1, -1);
+  } catch {
+    closeTutorial();
+  }
 }
 
 /**
- * Keyboard support for the tutorial overlay: Escape closes it (same
- * as Skip tutorial), and Tab/Shift+Tab are trapped to cycle only
- * through the overlay's own Back/Skip/Next buttons, so focus can
- * never silently leave the dialog while it is open. No-ops entirely
- * when the tutorial is not active.
+ * Keyboard support for the tutorial overlay: Escape always closes it
+ * (same as Skip tutorial), and Tab/Shift+Tab are trapped to cycle only
+ * through the overlay's own Back/Skip/Next buttons, so focus can never
+ * silently leave the dialog while it is open. Escape is checked
+ * against the overlay's own visibility as well as `tutorialActive`, so
+ * it still works as a safety net to remove the overlay even if that
+ * flag ever fell out of sync. No-ops entirely when the tutorial is not
+ * open.
  * @param {KeyboardEvent} e
  * @returns {void}
  */
 function handleTutorialKeydown(e) {
-  if (!tutorialActive) return;
+  const overlay = document.getElementById("tutorial-overlay");
+  const overlayOpen = tutorialActive || (overlay && !overlay.hidden);
+  if (!overlayOpen) return;
 
   if (e.key === "Escape") {
     e.preventDefault();
