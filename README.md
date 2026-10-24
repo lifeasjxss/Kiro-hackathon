@@ -2,16 +2,13 @@
 
 **AI as a tool, not the answer.**
 
-AI Detective is a free browser game for grades 6-8 (ages 11-14). Kids play a junior detective who reads an AI chatbot's answer, finds the one planted mistake, and learns a four-step routine called SPOT for checking AI answers. A teacher page shows anonymous, class-wide results.
+AI Detective is a free browser game for grades 6-8 (ages 11-14). Kids play a junior detective who reads an AI chatbot's answer, finds the one planted mistake, and learns a four-step routine called SPOT for checking AI answers. A teacher page shows anonymous totals from games played on that device and browser.
 
 **Play it:** https://lifeasjxss.github.io/Kiro-hackathon/hello-world-website/
 
 - Teacher page: https://lifeasjxss.github.io/Kiro-hackathon/hello-world-website/teacher.html
 - Source dashboard: https://lifeasjxss.github.io/Kiro-hackathon/hello-world-website/sources.html
-- Demo video: [add link]
-- Blog post: [add link]
-
-[Add 1-2 screenshots here: a case screen and the teacher page]
+- Demo video: https://youtu.be/5RJtKVjYIqA
 
 ---
 
@@ -21,14 +18,14 @@ AI Detective is a free browser game for grades 6-8 (ages 11-14). Kids play a jun
 
 AI chatbots can sound confident and still be wrong, and kids in grades 6-8 are growing up with them. The lessons I reviewed teach kids to judge websites, posts, and scams, but I found almost none that let a middle schooler practice catching mistakes in an AI answer.
 
-**Why this is within reach for me:** [Add 2-3 sentences in your own words: what you saw with your little brother or in your own life that made this a real problem.]
+**Why this is within reach for me:** I first met AI in high school as something to be afraid of, because it was mostly talked about as cheating. Now my little brother is growing up with AI summaries at the top of every search, and he uses them to back up what he says. I was taught to check whether a source looks legit, but kids today are rarely taught to check an AI answer, and I have gotten wrong answers from AI myself while studying math.
 
 Target users: middle schoolers (ages 11-14) who play, and teachers who use it as a short classroom activity. It needs no accounts and works on school Chromebooks.
 
 ### Solution summary and key features
 
 - **Case files with planted mistakes.** Each case shows a question and the Confident Bot's answer, which has exactly one planted mistake. Kids pick the mistake from multiple-choice phrases, so there is no typing anywhere.
-- **Mistake types** match patterns researchers describe in real AI errors: invented authority, extreme numbers, no specifics, and overconfident tone. [Update if you added more types.]
+- **Mistake types** match patterns researchers describe in real AI errors, such as invented authority, extreme numbers, no specifics, and overconfident tone.
 - **SPOT toolkit.** Four tools on every case: **S**tep away from the chat, **P**ick your search words, **O**pen other sources, **T**est and decide. Each shows a tip written for that case.
 - **Feedback that teaches.** A wrong answer gets a one-line reason why and a retry. A right answer unmasks the bot and names the mistake type.
 - **"Need a clue?"** gives a nudge without giving the answer away.
@@ -49,7 +46,7 @@ Target users: middle schoolers (ages 11-14) who play, and teachers who use it as
 | Accounts | None | Student logins | Avoids collecting any child's data |
 | Sound | Synthesized with the Web Audio API | Audio files | No files to license, and nothing to download |
 | Fonts | Open-licensed fonts stored in `fonts/` | Linking fonts from Google | Keeps kids' browsers from contacting outside servers |
-| Hosting | GitHub Pages | Amazon S3 and CloudFront | Fastest and gives HTTPS automatically. I first practiced static hosting on Amazon S3 with a Hello World page. [Update if you moved the game to S3 and CloudFront.] |
+| Hosting | GitHub Pages | Amazon S3 and CloudFront | Fastest and gives HTTPS automatically. I first practiced static hosting on Amazon S3 with a Hello World page. |
 
 ### Trade-offs
 
@@ -84,15 +81,15 @@ To deploy, turn on GitHub Pages for the `main` branch. The site updates each tim
 
 The `.kiro/` folder holds the Steering file, the Specs, and the Hook.
 
-**Steering.** I wrote `.kiro/steering/product.md` before building. It sets the audience (grades 6-8 at about a 6th-grade reading level), tone, privacy rules, accessibility rules, the SPOT routine, the detective theme, and a list of what is out of scope. The strategy that worked was putting rules I never wanted broken in one place, so I did not have to repeat them in every prompt. Kiro turned the reading-level rule into an automated test, which exposed strings that were too hard. [Confirm: when the test's 5.0-7.0 range flagged strings, I changed it to a grade-8 ceiling with no minimum.]
+**Steering.** I wrote `.kiro/steering/product.md` before building. It sets the audience (grades 6-8 at about a 6th-grade reading level), tone, privacy rules, accessibility rules, the SPOT routine, the detective theme, and a list of what is out of scope. The strategy that worked was putting rules I never wanted broken in one place, so I did not have to repeat them in every prompt. Kiro turned the reading-level rule into an automated test, which exposed strings that were too hard. When I ran it, Kiro measured every kid-facing instruction and every case's "why" line with two independent reading-level checks. The scores ranged from about grade 0.5 to 12.3, and around 19 strings (5 interface strings and 14 case explanations) failed my rule. That showed me Steering is more than advice: Kiro can turn it into something it enforces. Short strings also make the score jump around, so I treated the score as a guide and reworded the strings that were too hard.
 
-**Spec-driven development.** I gave Kiro the six MVP features plus the source dashboard in Spec mode. It produced requirements, a design, and a task list of about 14 tasks. I read each stage and checked it against my privacy rules before approving. Compared with vibe coding, specs gave me a plan I could check and tick off, which suited the core build. [Add one specific moment where the Spec caught or shaped something.]
+**Spec-driven development.** I gave Kiro the six MVP features plus the source dashboard in Spec mode. It produced requirements, a design, and a task list of about 14 tasks. I read each stage and checked it against my privacy rules before approving. Compared with vibe coding, specs gave me a plan I could check and tick off, which suited the core build.
 
 **Agent hooks.** I made `cases-review-on-save`. When `data/cases.json` is saved, Kiro checks that every case has exactly one planted mistake, a decoys field, a one-line why, and real sources, flags anything uncertain with `needsReview` instead of inventing a source, and keeps `docs/source-log.md` in sync. I chose it because the cases are the heart of the game and AI can invent sources that look real.
 
-**Vibe coding (chat).** I used regular chat for focused changes after the core build, such as the font setup, color theme, sound, certificate, and SPOT tool fixes. Each prompt asked for a short plan first and listed what not to change (scoring, game logic, data collection). [Add your best code-generation moment.]
+**Vibe coding (chat).** I used regular chat for focused changes after the core build, such as the font setup, color theme, sound, certificate, and SPOT tool fixes. Each prompt asked for a short plan first and listed what not to change (scoring, game logic, data collection).
 
-**MCP.** I did not use MCP in this project. [Optional: say what you would connect in a future version.]
+**MCP.** I did not use MCP in this project.
 
 **Models.** I used a stronger Opus model for the Spec, because requirements and design shape everything after, and a cheaper Sonnet model for most build tasks.
 
@@ -106,7 +103,7 @@ All code in this repo was built in Kiro. Research and planning were supported by
 - **Repeated patterns in the cases.** Playtesting showed the planted mistake was always in the same spot, which let kids guess by position. I added a plan for different positions, shapes, and confident voices, and rewrote the cases.
 - **Making the cases trustworthy.** AI can invent sources, so I checked each link and used the hook to flag anything uncertain.
 - **Deploying.** My early commits never reached GitHub, so the live site showed old files. I learned how commits and pushes work.
-- **Feeling like a detective.** Playtesters said the look said detective but the play did not yet feel like investigating. [Add what you changed, or say it is future work.]
+- **Feeling like a detective.** Playtesters said the look said detective but the play did not yet feel like investigating. In response, I added a way to mark suspicious sentences and to pin evidence cards from the SPOT tools.
 
 **Feedback received.** Two testers so far: an 11-year-old who just started 6th grade, and an adult in his 60s who works in the financial industry. Both liked the design and said the colors look like a detective game. Both said, separately, that the gameplay should feel more like investigating, with clues, suspicious details, and evidence for deciding whether an answer can be trusted.
 
