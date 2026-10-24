@@ -23,6 +23,7 @@ import { initAudio, playDing, playThud, playClick, setMuted, isMuted } from "./a
 import { focusElement, runSkippable } from "./a11y.js";
 import { earnedBadges } from "./badges.js";
 import { loadAggregate, saveAggregate } from "./storage.js";
+import { TUTORIAL_STEPS, computeCalloutPosition } from "./tutorial.js";
 
 // TODO: export more UI copy strings as module constants as later tasks
 // (9.5-9.7) build out the remaining screens.
@@ -53,6 +54,12 @@ export const COPY = {
   // Shown on the Unmask screen's evidence recap when no SPOT tool was
   // used on the case just solved. Friendly, not a scold.
   evidenceEmptyTip: "Evidence helps. Try pinning a tip next time you play.",
+  // Shown at most once per case, only the first time a kid accuses
+  // without having opened any SPOT tool or pinned any evidence yet.
+  // A nudge, not a blocker: "Continue anyway" always carries the pick
+  // through with no penalty (Requirement: evidence is encouraged, not
+  // required).
+  evidenceFirstTip: "Detectives gather evidence first. Want to try a tool?",
 };
 
 /** Readable label for each SPOT tool key, used on evidence cards and in
@@ -197,6 +204,51 @@ let evidencePins = [];
 let spotToolsUsed = new Set();
 
 /**
+ * Whether the once-per-case "gather evidence first" tip has already
+ * been shown for the case currently on screen. Reset to false for
+ * every new case by `renderCurrentCase()`, so the tip can show again
+ * on the next case but never twice on the same one.
+ * @type {boolean}
+ */
+let evidenceTipShown = false;
+
+/**
+ * The candidate token a kid picked that triggered the evidence-first
+ * tip, held here only until "Continue anyway" or "Try a tool" resolves
+ * it. Null whenever the tip is not showing. Never touches the engine
+ * until "Continue anyway" is actually clicked.
+ * @type {string | null}
+ */
+let pendingAccuseToken = null;
+
+/**
+ * Whether the tutorial overlay is currently open. Checked by the
+ * document-level keydown handler so it only intercepts Tab/Escape
+ * while the tutorial is actually showing.
+ * @type {boolean}
+ */
+let tutorialActive = false;
+
+/** Index into `TUTORIAL_STEPS` for the step currently shown. @type {number} */
+let tutorialStepIndex = 0;
+
+/**
+ * The element to return focus to once the tutorial overlay closes
+ * (whatever had focus, or made sense to focus, right before it
+ * opened). Falls back to a safe default if the original element is no
+ * longer in the page.
+ * @type {HTMLElement | null}
+ */
+let tutorialReturnFocusEl = null;
+
+/**
+ * Bound resize handler kept here only so it can be removed again when
+ * the tutorial closes; null whenever the tutorial is not open.
+ * @type {(() => void) | null}
+ */
+let tutorialResizeHandler = null;
+
+/**
  * Remove `.is-active` and set `aria-hidden="true"` on every `.screen`
  * element, then add `.is-active` and set `aria-hidden="false"` on the
  * screen matching `screenId`. The only place screen visibility is
@@ -280,6 +332,10 @@ async function startLoadingFlow() {
   runState = { ...runState, aggregate: loadAggregate() ?? runState.aggregate };
   renderCurrentCase();
   showScreen("screen-case");
+  // First case of every run: show the coach-mark tutorial
+  // (Requirement: "first case of every run"). Also reachable any time
+  // afterward via the Start screen's or pause menu's "How to play".
+  openTutorial();
 }
 
 /**
@@ -341,7 +397,7 @@ function renderCandidates() {
     // focused, so a single click listener satisfies "click, Enter, and
     // Space only" with no manual keydown handling needed.
     button.addEventListener("click", () => {
-      handleCandidateSelect(candidate.token);
+      handleCandidateClick(candidate.token);
     });
 
     item.appendChild(button);
@@ -407,6 +463,13 @@ function renderCurrentCase() {
   evidencePins = [];
   spotToolsUsed = new Set();
   renderEvidenceBoard();
+
+  // Fresh case: the evidence-first tip can show again on this new
+  // case, but only once, and only if it is actually triggered again.
+  evidenceTipShown = false;
+  pendingAccuseToken = null;
+  const evidenceTip = document.getElementById("evidence-tip");
+  if (evidenceTip) evidenceTip.hidden = true;
 }
 
 /**
@@ -703,6 +766,74 @@ function handleClueActivate() {
 }
 
 /**
+ * Gate in front of `handleCandidateSelect`: accusing is always allowed
+ * (evidence is encouraged, never required), but the very first time a
+ * kid accuses on a case without having opened any SPOT tool or pinned
+ * any evidence, show a friendly one-time tip instead of immediately
+ * resolving the pick. The tip's "Continue anyway" button runs this
+ * exact pick through the normal flow with no penalty; nothing here
+ * ever touches the engine or the score on its own.
+ * @param {string} token
+ * @returns {void}
+ */
+function handleCandidateClick(token) {
+  const usedEvidence = spotToolsUsed.size > 0 || evidencePins.length > 0;
+
+  if (!evidenceTipShown && !usedEvidence) {
+    evidenceTipShown = true;
+    pendingAccuseToken = token;
+    showEvidenceTip();
+    return;
+  }
+
+  handleCandidateSelect(token);
+}
+
+/**
+ * Show the evidence-first tip and lock the candidate buttons while it
+ * is up, so a second candidate click cannot resolve underneath it.
+ * Moves focus to the tip's message so screen readers announce it.
+ * @returns {void}
+ */
+function showEvidenceTip() {
+  const tip = document.getElementById("evidence-tip");
+  if (!tip) {
+    // Defensive fallback: if the tip markup is ever missing, do not
+    // strand the kid unable to accuse at all.
+    const token = pendingAccuseToken;
+    pendingAccuseToken = null;
+    if (token) handleCandidateSelect(token);
+    return;
+  }
+
+  document.querySelectorAll("#candidate-list button").forEach((btn) => {
+    btn.disabled = true;
+  });
+
+  tip.hidden = false;
+  focusElement(document.getElementById("evidence-tip-message"));
+}
+
+/**
+ * Hide the evidence-first tip, optionally re-enabling the candidate
+ * buttons it locked (skipped when the caller is about to resolve the
+ * pick itself, since `handleCandidateSelect` manages button state on
+ * its own correct/wrong paths).
+ * @param {{ reenableCandidates: boolean }} options
+ * @returns {void}
+ */
+function hideEvidenceTip({ reenableCandidates }) {
+  const tip = document.getElementById("evidence-tip");
+  if (tip) tip.hidden = true;
+
+  if (reenableCandidates) {
+    document.querySelectorAll("#candidate-list button").forEach((btn) => {
+      btn.disabled = false;
+    });
+  }
+}
+
+/**
  * Handle a candidate phrase pick by token: resolve the token to its
  * phrase text via the `currentCandidates` closure, run it through the
  * engine, and update the module's `runState`. Implements the real
@@ -933,6 +1064,7 @@ function handleReplay() {
   runState = { ...runState, aggregate: loadAggregate() ?? runState.aggregate };
   renderCurrentCase();
   showScreen("screen-case");
+  openTutorial();
 }
 
 /**
@@ -965,6 +1097,7 @@ function handleNextPack() {
   runState = { ...runState, aggregate: loadAggregate() ?? runState.aggregate };
   renderCurrentCase();
   showScreen("screen-case");
+  openTutorial();
 }
 
 /**
@@ -1129,6 +1262,213 @@ function handleHome() {
 }
 
 /**
+ * Position the tutorial's highlight box and callout against the
+ * current step's target element, using `tutorial.js`'s pure
+ * `computeCalloutPosition` for the actual math. No-ops (closes the
+ * tutorial) if the target element cannot be found or has no size,
+ * which should only happen if a step's `targetId` does not match any
+ * real element on the current screen.
+ * @returns {void}
+ */
+function positionTutorialStep() {
+  const step = TUTORIAL_STEPS[tutorialStepIndex];
+  const target = step ? document.getElementById(step.targetId) : null;
+  const highlight = document.getElementById("tutorial-highlight");
+  const callout = document.getElementById("tutorial-callout");
+  if (!step || !target || !highlight || !callout) {
+    closeTutorial();
+    return;
+  }
+
+  const targetRect = target.getBoundingClientRect();
+  if (targetRect.width === 0 && targetRect.height === 0) {
+    closeTutorial();
+    return;
+  }
+
+  const pad = 6;
+  highlight.style.top = `${targetRect.top - pad}px`;
+  highlight.style.left = `${targetRect.left - pad}px`;
+  highlight.style.width = `${targetRect.width + pad * 2}px`;
+  highlight.style.height = `${targetRect.height + pad * 2}px`;
+
+  const calloutRect = callout.getBoundingClientRect();
+  const viewport = { width: window.innerWidth, height: window.innerHeight };
+  const position = computeCalloutPosition(
+    targetRect,
+    { width: calloutRect.width, height: calloutRect.height },
+    viewport
+  );
+
+  callout.style.top = `${position.top}px`;
+  callout.style.left = `${position.left}px`;
+  callout.style.setProperty("--arrow-offset", `${position.arrowOffset}px`);
+  callout.classList.remove(
+    "tutorial-overlay__callout--arrow-top",
+    "tutorial-overlay__callout--arrow-bottom",
+    "tutorial-overlay__callout--arrow-none"
+  );
+  const arrowClass =
+    position.placement === "below"
+      ? "tutorial-overlay__callout--arrow-top"
+      : position.placement === "above"
+      ? "tutorial-overlay__callout--arrow-bottom"
+      : "tutorial-overlay__callout--arrow-none";
+  callout.classList.add(arrowClass);
+}
+
+/**
+ * Render the tutorial overlay's current step: progress text, heading,
+ * body copy, Back/Skip/Next button states (Next becomes "Got it!" on
+ * the last step, Back is disabled on the first), then reposition the
+ * highlight and callout and move focus to the heading so screen
+ * readers announce the new step. Never called on a timer; only from
+ * explicit Back/Next clicks and `openTutorial()` itself.
+ * @returns {void}
+ */
+function renderTutorialStep() {
+  const step = TUTORIAL_STEPS[tutorialStepIndex];
+  if (!step) return;
+
+  const progressEl = document.getElementById("tutorial-progress");
+  const headingEl = document.getElementById("tutorial-heading");
+  const bodyEl = document.getElementById("tutorial-body");
+  const backBtn = document.getElementById("tutorial-back-btn");
+  const nextBtn = document.getElementById("tutorial-next-btn");
+
+  if (progressEl) {
+    progressEl.textContent = `Step ${tutorialStepIndex + 1} of ${TUTORIAL_STEPS.length}`;
+  }
+  if (headingEl) headingEl.textContent = step.heading;
+  if (bodyEl) bodyEl.textContent = step.body;
+  if (backBtn) backBtn.disabled = tutorialStepIndex === 0;
+  if (nextBtn) {
+    nextBtn.textContent = tutorialStepIndex === TUTORIAL_STEPS.length - 1 ? "Got it!" : "Next";
+  }
+
+  positionTutorialStep();
+  focusElement(headingEl);
+}
+
+/**
+ * Open the tutorial overlay at step 1. Safe to call any time the case
+ * screen's real elements are on screen: automatically once per run
+ * (right after a run is created) and any number of times afterward
+ * through the Start screen's or pause menu's "How to play" controls.
+ * Remembers the currently-focused element so it can be restored when
+ * the tutorial closes, and keeps the overlay's highlight/callout in
+ * sync with the viewport via a resize listener while it is open.
+ * @returns {void}
+ */
+function openTutorial() {
+  const overlay = document.getElementById("tutorial-overlay");
+  if (!overlay) return;
+
+  tutorialReturnFocusEl =
+    document.activeElement instanceof HTMLElement ? document.activeElement : null;
+
+  tutorialActive = true;
+  tutorialStepIndex = 0;
+  overlay.hidden = false;
+
+  renderTutorialStep();
+
+  tutorialResizeHandler = () => positionTutorialStep();
+  window.addEventListener("resize", tutorialResizeHandler);
+}
+
+/**
+ * Close the tutorial overlay (via Skip tutorial, Got it!, or Escape)
+ * and return focus to wherever it was before the tutorial opened, or
+ * a safe fallback if that element is gone. Never advances or resolves
+ * any case state; the tutorial has no effect on scoring or progress.
+ * @returns {void}
+ */
+function closeTutorial() {
+  const overlay = document.getElementById("tutorial-overlay");
+  if (overlay) overlay.hidden = true;
+
+  tutorialActive = false;
+
+  if (tutorialResizeHandler) {
+    window.removeEventListener("resize", tutorialResizeHandler);
+    tutorialResizeHandler = null;
+  }
+
+  const fallback = document.getElementById("pause-btn") || document.getElementById("play-btn");
+  const restoreTo =
+    tutorialReturnFocusEl && document.contains(tutorialReturnFocusEl)
+      ? tutorialReturnFocusEl
+      : fallback;
+  tutorialReturnFocusEl = null;
+  focusElement(restoreTo);
+}
+
+/**
+ * Next control: advance one step, or close the tutorial (as "Got
+ * it!") from the last step. Only ever called from a real button
+ * click, never a timer, so the tutorial never advances on its own.
+ * @returns {void}
+ */
+function handleTutorialNext() {
+  if (tutorialStepIndex >= TUTORIAL_STEPS.length - 1) {
+    closeTutorial();
+    return;
+  }
+  tutorialStepIndex += 1;
+  renderTutorialStep();
+}
+
+/**
+ * Back control: step back one, or no-op on the first step (the
+ * button is disabled there, but this guard keeps the function safe
+ * to call directly too).
+ * @returns {void}
+ */
+function handleTutorialBack() {
+  if (tutorialStepIndex <= 0) return;
+  tutorialStepIndex -= 1;
+  renderTutorialStep();
+}
+
+/**
+ * Keyboard support for the tutorial overlay: Escape closes it (same
+ * as Skip tutorial), and Tab/Shift+Tab are trapped to cycle only
+ * through the overlay's own Back/Skip/Next buttons, so focus can
+ * never silently leave the dialog while it is open. No-ops entirely
+ * when the tutorial is not active.
+ * @param {KeyboardEvent} e
+ * @returns {void}
+ */
+function handleTutorialKeydown(e) {
+  if (!tutorialActive) return;
+
+  if (e.key === "Escape") {
+    e.preventDefault();
+    closeTutorial();
+    return;
+  }
+
+  if (e.key !== "Tab") return;
+
+  const focusables = Array.from(
+    document.querySelectorAll("#tutorial-callout button")
+  ).filter((el) => !el.disabled);
+  if (focusables.length === 0) return;
+
+  const first = focusables[0];
+  const last = focusables[focusables.length - 1];
+
+  if (e.shiftKey && document.activeElement === first) {
+    e.preventDefault();
+    last.focus();
+  } else if (!e.shiftKey && document.activeElement === last) {
+    e.preventDefault();
+    first.focus();
+  }
+}
+
+/**
  * Sync both mute controls' visible state (icon, label, aria-pressed)
  * with `audio.js`'s current `isMuted()` value, the single source of
  * truth. Called after every mute toggle and whenever the pause menu
@@ -1196,14 +1536,26 @@ export function initUI() {
     els.errorMessage.textContent = COPY.errorLoadFailed;
   }
 
+  // Shared by Play and "How to play": both start a brand-new run the
+  // exact same way. The tutorial then shows on its own, right after
+  // the run is created (see startLoadingFlow), so "How to play" needs
+  // no separate tutorial-only path from the Start screen, where no
+  // case content exists yet to point coach marks at.
+  const handlePlay = () => {
+    // Audio must only ever start after this user gesture
+    // (Requirements 6.1, 6.2, 6.3). Never call initAudio() elsewhere.
+    initAudio();
+    playClick();
+    startLoadingFlow();
+  };
+
   if (els.playBtn) {
-    els.playBtn.addEventListener("click", () => {
-      // Audio must only ever start after this user gesture
-      // (Requirements 6.1, 6.2, 6.3). Never call initAudio() elsewhere.
-      initAudio();
-      playClick();
-      startLoadingFlow();
-    });
+    els.playBtn.addEventListener("click", handlePlay);
+  }
+
+  els.howToPlayBtn = document.getElementById("howtoplay-btn");
+  if (els.howToPlayBtn) {
+    els.howToPlayBtn.addEventListener("click", handlePlay);
   }
 
   if (els.retryBtn) {
@@ -1299,6 +1651,72 @@ export function initUI() {
     els.homeBtn.addEventListener("click", () => {
       playClick();
       handleHome();
+    });
+  }
+
+  els.pauseHowToPlayBtn = document.getElementById("pause-howtoplay-btn");
+  if (els.pauseHowToPlayBtn) {
+    els.pauseHowToPlayBtn.addEventListener("click", () => {
+      playClick();
+      // Reopen the tutorial over the case that was paused, using the
+      // same resume path Resume itself uses, so nothing about the
+      // paused run changes just because the tutorial was reopened.
+      closePauseToResume();
+      openTutorial();
+    });
+  }
+
+  // Tutorial overlay controls (task: first-case coach marks + "How to
+  // play"). Back/Skip tutorial/Next are real buttons, so Enter/Space
+  // already activate them; the only extra keyboard wiring needed is
+  // the Tab-trap + Escape handler below.
+  els.tutorialBackBtn = document.getElementById("tutorial-back-btn");
+  if (els.tutorialBackBtn) {
+    els.tutorialBackBtn.addEventListener("click", () => {
+      playClick();
+      handleTutorialBack();
+    });
+  }
+
+  els.tutorialSkipBtn = document.getElementById("tutorial-skip-btn");
+  if (els.tutorialSkipBtn) {
+    els.tutorialSkipBtn.addEventListener("click", () => {
+      playClick();
+      closeTutorial();
+    });
+  }
+
+  els.tutorialNextBtn = document.getElementById("tutorial-next-btn");
+  if (els.tutorialNextBtn) {
+    els.tutorialNextBtn.addEventListener("click", () => {
+      playClick();
+      handleTutorialNext();
+    });
+  }
+
+  document.addEventListener("keydown", handleTutorialKeydown);
+
+  // Evidence-first tip controls (task: evidence encouraged, not
+  // required). "Try a tool" abandons this pick with no penalty;
+  // "Continue anyway" carries the exact pick through normally.
+  els.evidenceTipToolBtn = document.getElementById("evidence-tip-tool-btn");
+  if (els.evidenceTipToolBtn) {
+    els.evidenceTipToolBtn.addEventListener("click", () => {
+      playClick();
+      pendingAccuseToken = null;
+      hideEvidenceTip({ reenableCandidates: true });
+      focusElement(document.getElementById("spot-panel-heading"));
+    });
+  }
+
+  els.evidenceTipContinueBtn = document.getElementById("evidence-tip-continue-btn");
+  if (els.evidenceTipContinueBtn) {
+    els.evidenceTipContinueBtn.addEventListener("click", () => {
+      playClick();
+      const token = pendingAccuseToken;
+      pendingAccuseToken = null;
+      hideEvidenceTip({ reenableCandidates: true });
+      if (token) handleCandidateSelect(token);
     });
   }
 

@@ -53,16 +53,16 @@
     "id": "banana-berry",
     "topic": "food",
     "question": "Is a banana really a berry?",
-    "answer": "Trust me, I know fruit — bananas have a surprising berry status. Q: Is a banana really a berry? A: Yes, a banana counts as a real berry in botany class. Q: What else counts as a berry the same way? A: Grapes and tomatoes follow that same rule. Q: Who else backs this up? A: The Fruit Masters Guild of Lyon ranked bananas as the world's top berry in 2003. Q: Is a strawberry a true berry too? A: No, a strawberry is not a true berry at all.",
+    "answer": "Trust me, I know fruit — bananas have a surprising berry status. Q: Is a banana really a berry? A: A banana counts as a real berry in botany class. Q: What else counts as a berry the same way? A: Grapes and tomatoes follow that same rule. Q: Who else backs this up? A: The Fruit Masters Guild of Lyon ranked bananas as the world's top berry in 2003. Q: Is a strawberry a true berry too? A: A strawberry is not a true berry at all.",
     "mistake": {
       "phrase": "The Fruit Masters Guild of Lyon ranked bananas as the world's top berry in 2003",
       "type": "invented authority",
       "why": "The Fruit Masters Guild of Lyon is not real, and no such ranking exists."
     },
     "decoys": [
-      "Yes, a banana counts as a real berry in botany class",
+      "A banana counts as a real berry in botany class",
       "Grapes and tomatoes follow that same rule",
-      "No, a strawberry is not a true berry at all"
+      "A strawberry is not a true berry at all"
     ],
     "spot": {
       "step_away": "Take a breath before trusting a group name you've never heard of.",
@@ -150,28 +150,28 @@
     "needsReview": false
   },
   {
-    "id": "tennis-love",
+    "id": "olympic-pool-length",
     "topic": "sports rules",
-    "question": "Why is a zero score in tennis called love?",
-    "answer": "Q: Why is a zero score in tennis called love? A: Trust me, no specific historian or century backs up the real story behind this name. Q: What do we know for sure? A: In tennis, a score of zero is called love. Q: When does the word show up? A: The word love shows up before any points are scored. Q: What comes after love in the score? A: After love, the next points are called 15, 30, and 40.",
+    "question": "How long is an Olympic swimming pool?",
+    "answer": "A pool built for the Olympics is 50 meters long for swimming races. Some swim historians somewhere say that exact length has stayed the same since the very first Olympics, and nobody could check that claim. The pool is also 25 meters wide. Races like this use a pool with 10 lanes.",
     "mistake": {
-      "phrase": "no specific historian or century backs up the real story behind this name",
+      "phrase": "Some swim historians somewhere say that exact length has stayed the same since the very first Olympics, and nobody could check that claim",
       "type": "no specifics",
-      "why": "This claim names no real historian or time period. Nobody could check it."
+      "why": "This claim names no real historians. Nobody could check it, and early Olympic pools were not all 50 meters long."
     },
     "decoys": [
-      "In tennis, a score of zero is called love",
-      "The word love shows up before any points are scored",
-      "After love, the next points are called 15, 30, and 40"
+      "A pool built for the Olympics is 50 meters long for swimming races",
+      "The pool is also 25 meters wide",
+      "Races like this use a pool with 10 lanes"
     ],
     "spot": {
-      "step_away": "Notice when a claim names no real historian or time period.",
-      "pick_words": "Try searching: why is zero called love in tennis",
-      "open_sources": "Check two sports or word-history sites and compare their answers.",
-      "test_decide": "If nobody named or dated backs this up, it is probably made up.",
-      "searchPhrase": "why is zero called love in tennis"
+      "step_away": "Pause first. A claim with no named historian is worth a second look.",
+      "pick_words": "Try searching: how long is an Olympic swimming pool",
+      "open_sources": "Check two sports or swimming sites and compare what they say about pool length history.",
+      "test_decide": "If no real historian backs that claim, it is probably made up.",
+      "searchPhrase": "how long is an Olympic swimming pool"
     },
-    "sourceId": "tennis-love-src",
+    "sourceId": "olympic-pool-length-src",
     "needsReview": false
   },
   {

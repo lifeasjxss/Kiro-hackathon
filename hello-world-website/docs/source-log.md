@@ -45,11 +45,11 @@ Human-readable, canonical record of every real fact used in AI Detective. Mirror
 - **Date accessed:** 2026-10-21
 - **Used for:** Sharks shed and regrow teeth throughout their lives, moving new teeth forward like a conveyor belt.
 
-### tennis-love-src (company source)
-- **Source:** USTA — Tennis Scoring Basics
-- **Link:** https://www.usta.com/
-- **Date accessed:** 2026-10-21
-- **Used for:** In tennis, a score of zero is called "love."
+### olympic-pool-length-src (company source)
+- **Source:** World Aquatics — Facilities Rules
+- **Link:** https://www.worldaquatics.com/rules/facilities
+- **Date accessed:** 2026-10-23
+- **Used for:** An Olympic (long course) swimming pool is 50 meters long, 25 meters wide, and has 10 lanes.
 
 ### everest-height-src
 - **Source:** National Geographic — Mount Everest

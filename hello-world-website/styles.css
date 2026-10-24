@@ -78,7 +78,17 @@
 
    Pause menu:
      .pause-menu                 panel inside .screen--pause
-     .pause-menu__actions        button row (mute/resume/restart/home)
+     .pause-menu__actions        button row (mute/how to play/resume/restart/home)
+
+   Onboarding (first-case tutorial, answer-screen strip, SPOT legend,
+   evidence-first tip):
+     .case-prompt                 "One detail...find it!" line above the answer
+     .step-strip                  1 Read / 2 Investigate (optional) / 3 Accuse strip
+     .spot-legend                 <details> disclosure, one line per SPOT letter
+     .evidence-tip                friendly once-per-case "gather evidence first" nudge
+     .tutorial-overlay            fixed coach-mark layer (scrim + highlight + callout)
+     .tutorial-overlay__highlight the dimmer + "window" around the current target
+     .tutorial-overlay__callout   the step's heading/body/Back/Skip/Next card
 
    End screen:
      .end-summary                score + headline area
@@ -1449,5 +1459,245 @@ button:focus:not(:focus-visible),
 @media (min-width: 768px) {
   .evidence-board__list {
     gap: var(--space-3);
+  }
+}
+
+/* ==========================================================================
+   16. Case-screen prompt + step strip
+   ==========================================================================
+   Sits inside .bot-card, on the --paper surface, so (unlike most of the
+   dark-theme UI) these use --paper-ink directly rather than --text /
+   --text-muted, matching the existing h2/.bot-card__answer convention
+   right above for contrast on that light background.
+   ========================================================================== */
+
+.case-prompt {
+  font-family: var(--font-notes);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--paper-ink);
+  margin: 0 0 var(--space-2);
+}
+
+.step-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  list-style: none;
+  padding: 0;
+  margin: 0 0 var(--space-3);
+}
+
+.step-strip__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--paper-ink);
+  font-family: var(--font-stats);
+  font-size: 0.95rem;
+}
+
+.step-strip__num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 2px solid var(--paper-ink);
+  color: var(--paper-ink);
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+/* ==========================================================================
+   17. SPOT legend
+   ==========================================================================
+   A native <details>/<summary> disclosure: keyboard- and screen-reader-
+   operable with no extra JS. "One tap away" per the product steering's
+   accessibility rules; the four lines never change per case.
+   ========================================================================== */
+
+.spot-legend {
+  margin: 0 0 var(--space-3);
+  background: var(--panel);
+  border: 2px solid var(--neutral);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+}
+
+.spot-legend__summary {
+  cursor: pointer;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  font-family: var(--font-rank);
+  font-size: 1.1rem;
+  color: var(--text);
+}
+
+.spot-legend__list {
+  list-style: none;
+  padding: 0;
+  margin: var(--space-2) 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.spot-legend__list li {
+  font-family: var(--font-notes);
+  font-size: 0.95rem;
+  color: var(--text-muted);
+}
+
+.spot-legend__list li strong {
+  color: var(--text);
+  margin-right: var(--space-1);
+}
+
+/* ==========================================================================
+   18. Evidence-first tip
+   ==========================================================================
+   Shown once per case, only if a kid accuses before opening any SPOT
+   tool or pinning any evidence (js/ui.js). Friendly nudge, not a
+   blocker: "Continue anyway" always carries the pick through with no
+   penalty.
+   ========================================================================== */
+
+.evidence-tip {
+  margin: 0 0 var(--space-3);
+  padding: var(--space-3);
+  background: var(--panel);
+  border: 2px solid var(--btn-primary);
+  border-radius: var(--radius-md);
+}
+
+.evidence-tip__message {
+  margin: 0 0 var(--space-2);
+  color: var(--text);
+  font-family: var(--font-notes);
+  font-size: 1rem;
+}
+
+.evidence-tip__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+/* ==========================================================================
+   19. Tutorial overlay (coach marks)
+   ==========================================================================
+   `.tutorial-overlay__highlight` does double duty as both the dimmer
+   and the "window" around the target: its own box is positioned/sized
+   (by js/ui.js) to exactly match the target element's rect, and its
+   box-shadow spreads 9999px outward to dim everything else. Because
+   that shadow is paint only (not a real box), a separate full-viewport
+   `.tutorial-overlay__scrim` sits behind it to actually catch clicks
+   anywhere on screen, including "through" the highlighted window, so
+   the tutorial stays fully modal: reading and the four nav buttons are
+   the only way to move through it. Position math lives in
+   js/tutorial.js; this file only styles the result.
+   ========================================================================== */
+
+.tutorial-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+}
+
+.tutorial-overlay[hidden] {
+  display: none;
+}
+
+.tutorial-overlay__scrim {
+  position: fixed;
+  inset: 0;
+  background: transparent;
+}
+
+.tutorial-overlay__highlight {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  border-radius: var(--radius-md);
+  box-shadow: 0 0 0 9999px rgba(3, 5, 12, 0.72), 0 0 0 3px var(--btn-primary);
+}
+
+.tutorial-overlay__callout {
+  position: fixed;
+  top: 0;
+  left: 0;
+  max-width: min(22rem, calc(100vw - 2 * var(--space-3)));
+  background: var(--panel);
+  border: 2px solid var(--btn-primary);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  box-shadow: 0 0.5rem 1.5rem rgba(3, 5, 12, 0.5);
+}
+
+.tutorial-overlay__progress {
+  margin: 0 0 var(--space-1);
+  color: var(--text-muted);
+  font-family: var(--font-stats);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.tutorial-overlay__callout h3 {
+  font-size: 1.25rem;
+  margin: 0 0 var(--space-2);
+}
+
+.tutorial-overlay__body {
+  color: var(--text);
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  margin: 0 0 var(--space-3);
+}
+
+.tutorial-overlay__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  justify-content: flex-end;
+}
+
+/* Arrow: a small CSS triangle anchored to the callout's own box, offset
+   via the --arrow-offset custom property (set inline by js/ui.js) so
+   it still points roughly at the target's center. */
+.tutorial-overlay__callout::after {
+  content: "";
+  position: absolute;
+  width: 0;
+  height: 0;
+  border: 10px solid transparent;
+  left: var(--arrow-offset, 50%);
+  transform: translateX(-50%);
+}
+
+.tutorial-overlay__callout--arrow-top::after {
+  top: -20px;
+  border-bottom-color: var(--btn-primary);
+}
+
+.tutorial-overlay__callout--arrow-bottom::after {
+  bottom: -20px;
+  border-top-color: var(--btn-primary);
+}
+
+.tutorial-overlay__callout--arrow-none::after {
+  display: none;
+}
+
+@media (min-width: 480px) {
+  .tutorial-overlay__actions {
+    flex-wrap: nowrap;
   }
 }

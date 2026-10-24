@@ -14,8 +14,9 @@
          ============================================================ -->
     <section class="screen screen--start is-active" id="screen-start" aria-hidden="false">
       <h1>AI Detective</h1>
-      <p>Read the Confident Bot's answer. Find the one made-up fact. Crack the case.</p>
+      <p>You're a junior detective. The Confident Bot answers questions, but it always hides one made-up detail. Read its answer, investigate with your SPOT tools, then make your accusation.</p>
       <button class="btn btn--primary" id="play-btn" type="button">Play</button>
+      <button class="btn btn--secondary" id="howtoplay-btn" type="button">How to play</button>
     </section>
 
     <!-- ============================================================
@@ -61,6 +62,12 @@
 
       <div class="bot-card" id="bot-card">
         <h2 id="case-question">Loading question...</h2>
+        <p class="case-prompt">One detail in this answer is made up. Find it!</p>
+        <ol class="step-strip" aria-label="How to solve a case">
+          <li class="step-strip__item"><span class="step-strip__num" aria-hidden="true">1</span>Read</li>
+          <li class="step-strip__item"><span class="step-strip__num" aria-hidden="true">2</span>Investigate (optional)</li>
+          <li class="step-strip__item"><span class="step-strip__num" aria-hidden="true">3</span>Accuse</li>
+        </ol>
         <!-- Sentence buttons are rendered by js/ui.js; each one can be
              tapped to toggle a "mark as suspicious" highlight. This is a
              visual aid only and never affects the answer or the score. -->
@@ -79,7 +86,29 @@
       <ul class="candidate-list" id="candidate-list" aria-label="Pick the planted mistake">
       </ul>
 
+      <!-- Evidence-first tip: shown by js/ui.js the first time a kid
+           accuses on a case without opening any SPOT tool or pinning
+           any evidence. Friendly, not a penalty: "Continue anyway"
+           runs the exact pick the kid already made. Hidden otherwise,
+           and reset for every new case. -->
+      <div class="evidence-tip" id="evidence-tip" hidden role="dialog" aria-modal="false" aria-labelledby="evidence-tip-message">
+        <p class="evidence-tip__message" id="evidence-tip-message">Detectives gather evidence first. Want to try a tool?</p>
+        <div class="evidence-tip__actions">
+          <button class="btn btn--secondary" id="evidence-tip-tool-btn" type="button">Try a tool</button>
+          <button class="btn btn--primary" id="evidence-tip-continue-btn" type="button">Continue anyway</button>
+        </div>
+      </div>
+
       <h3 class="spot-panel__heading" id="spot-panel-heading">Investigation tools</h3>
+      <details class="spot-legend" id="spot-legend">
+        <summary class="spot-legend__summary">SPOT legend</summary>
+        <ul class="spot-legend__list">
+          <li><strong>S</strong> Step away: Stop and think before you believe it.</li>
+          <li><strong>P</strong> Pick your search words: Choose a few plain words to search with.</li>
+          <li><strong>O</strong> Open other sources: Check at least two other sources.</li>
+          <li><strong>T</strong> Test and decide: Compare what you found, then decide.</li>
+        </ul>
+      </details>
       <div class="spot-panel" id="spot-panel" aria-labelledby="spot-panel-heading">
         <div class="spot-tool" data-tool="step_away">
           <button class="spot-tool__toggle" type="button" data-tool="step_away">
@@ -161,6 +190,7 @@
             <span id="pause-mute-label">Mute</span>
           </button>
           <button class="btn btn--primary" id="resume-btn" type="button">Resume</button>
+          <button class="btn btn--secondary" id="pause-howtoplay-btn" type="button">How to play</button>
           <button class="btn btn--secondary" id="restart-btn" type="button">Restart</button>
           <button class="btn btn--secondary" id="home-btn" type="button">Home</button>
         </div>
@@ -212,6 +242,38 @@
         <button class="btn btn--secondary" id="certificate-close-btn" type="button">Back</button>
       </div>
     </section>
+
+    <!-- ============================================================
+         Tutorial overlay: first-case coach marks, and "How to play"
+         replays. A highlight box is positioned over the real element
+         each step describes, with a callout + arrow beside it. Pure
+         explanatory walkthrough: it never advances on its own and
+         never requires the kid to actually tap anything underneath,
+         only to read and use Back/Skip tutorial/Next/Got it!.
+         Rendered/positioned entirely by js/ui.js (js/tutorial.js owns
+         the step content and the position math).
+         ============================================================ -->
+    <div class="tutorial-overlay" id="tutorial-overlay" hidden>
+      <div class="tutorial-overlay__scrim" id="tutorial-scrim"></div>
+      <div class="tutorial-overlay__highlight" id="tutorial-highlight" aria-hidden="true"></div>
+      <div
+        class="tutorial-overlay__callout"
+        id="tutorial-callout"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="tutorial-heading"
+        aria-describedby="tutorial-body"
+      >
+        <p class="tutorial-overlay__progress" id="tutorial-progress">Step 1 of 4</p>
+        <h3 id="tutorial-heading">Read</h3>
+        <p class="tutorial-overlay__body" id="tutorial-body">Read the question and the Confident Bot's answer.</p>
+        <div class="tutorial-overlay__actions">
+          <button class="btn btn--secondary" id="tutorial-back-btn" type="button">Back</button>
+          <button class="btn btn--secondary" id="tutorial-skip-btn" type="button">Skip tutorial</button>
+          <button class="btn btn--primary" id="tutorial-next-btn" type="button">Next</button>
+        </div>
+      </div>
+    </div>
 
   </main>
 
